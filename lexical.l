@@ -24,7 +24,8 @@ unary "++"|"--"
 ^"#include"[ ]*<.+\.h>      { return INCLUDE; }
 "true"                      { return TRUE; }
 "false"                     { return FALSE; }
-[-]?{digit}+                { return NUMBER; }
+[-]?{digit}+                { return NUM; }
+[-]?{digit}+\.{digit}{1,6}  { return FLOAT_NUM; }
 {alpha}({alpha}|{digit})*   { return ID; }
 {unary}                     { return UNARY; }
 "<="                        { return LE; }
