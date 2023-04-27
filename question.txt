@@ -1,4 +1,8 @@
 Implement the project using LEX and YACC as per the requirements.
-You are supposed to implement all phases of the compiler. Front-end phase involves the first 4 phases of the compiler from lexical analysis to intermediate code generation. Back-end phase consists of code optimization and target code generation. Show the intermediate results after each phase of the compiler including abstract syntax tree. Try implementing as much phases as you can. It is planned to conduct relative grading on this project.
+You are supposed to implement all phases of the compiler. 
+Front-end phase involves the first 4 phases of the compiler from lexical analysis to intermediate code generation. 
+Back-end phase consists of code optimization and target code generation. 
+Show the intermediate results after each phase of the compiler including abstract syntax tree. 
+Try implementing as much phases as you can. It is planned to conduct relative grading on this project.
 
 1. C Compiler for while loop with nested while loop and/or if-else constructs.
