@@ -14,12 +14,16 @@
 
     struct dataType {
         char * id_name;
-        char * data_type;
         char * type;
+        char * data_type;
+        char  *scope;
+        int size;
+        int off;
         int line_no;
     } symbol_table[40];
 
     int ind=0;
+    int offset=0;
     int exists;
     char type[10];
     extern int countn;
@@ -34,7 +38,7 @@ program: headers main '(' ')' '{' body return '}'
        ;
 
 headers: headers headers
-        | INCLUDE           { add('H'); }
+        | INCLUDE           
         ;
 
 main: datatype ID           { add('F'); }
@@ -93,13 +97,13 @@ arithmetic: ADD
           | DIV
           ;
 
-value: NUM          { add('C'); }
-    | FLOAT_NUM     { add('C'); }
-    | CHARACTER     { add('C'); }
+value: NUM          
+    | FLOAT_NUM     
+    | CHARACTER     
     | ID
     ;
 
-return: RETURN { add('K'); } value ';' 
+return: RETURN { add('K'); } NUM ';' 
 |
 ;
 
@@ -108,13 +112,13 @@ int main() {
     yyin=fopen("input.c","r");
     printf("\n");
     yyparse();
-    printf("Syntax Analyser: Parsing Successful\n");
+   printf("Syntax Analyser: Parsing Successful\n\nSymbol Table:\n");
 
-    printf("\nSYMBOL          DATATYPE          TYPE           LINE NUMBER \n");
-	printf("_______________________________________\n\n");
+    printf("\nSYMBOL\t\tSCOPE\t\tTYPE\t\tDATATYPE\tSIZE\t\tOFFSET\n");
+	printf("______________________________________________________________________________________\n\n");
     int i;
 	for(i=0; i<ind; i++) {
-		printf("%s\t\t%s\t\t%s\t\t%d\t\t\n", symbol_table[i].id_name, symbol_table[i].data_type, symbol_table[i].type, symbol_table[i].line_no);
+		printf("%s\t\t%s\t\t%s\t\t%d\t\t%d\t\t%s\t\t\n", symbol_table[i].id_name,symbol_table[i].type,symbol_table[i].data_type,symbol_table[i].size,symbol_table[i].off, symbol_table[i].scope);
 	}
 	for(int i=0;i<ind;i++) {
 		free(symbol_table[i].id_name);
@@ -137,38 +141,67 @@ void add(char c) {
   exists=lookup(yytext);
   if(!exists){
         if(c == 'H') {
-            symbol_table[ind].id_name=strdup(yytext);        
-            symbol_table[ind].data_type=strdup(type);     
-            symbol_table[ind].line_no=countn;    
+            symbol_table[ind].id_name=strdup(yytext);            
+            symbol_table[ind].line_no=countn;
+            symbol_table[ind].data_type=strdup(type);         
             symbol_table[ind].type=strdup("Header");
+            symbol_table[ind].size=1;
+            symbol_table[ind].off=offset;
+            offset+=symbol_table[ind].size;
+            symbol_table[ind].scope=strdup("local");
             ind++;  
         }  
         else if(c == 'K') {
             symbol_table[ind].id_name=strdup(yytext);
-            symbol_table[ind].data_type=strdup("-");
             symbol_table[ind].line_no=countn;
-            symbol_table[ind].type=strdup("Keyword\t");   
+            symbol_table[ind].data_type=strdup("-");     
+            symbol_table[ind].type=strdup("Keyword"); 
+            symbol_table[ind].size=1;
+            symbol_table[ind].off=offset; 
+            offset+=symbol_table[ind].size;
+            symbol_table[ind].scope=strdup("local"); 
             ind++;  
         }  
         else if(c == 'V') {
             symbol_table[ind].id_name=strdup(yytext);
-            symbol_table[ind].data_type=strdup(type);
             symbol_table[ind].line_no=countn;
-            symbol_table[ind].type=strdup("Variable");   
+            symbol_table[ind].data_type=strdup(type);     
+            symbol_table[ind].type=strdup("Var");   
+            if(strcmp(type,"int")==0){
+                symbol_table[ind].size=2;
+            }
+            else if(strcmp(type,"float")==0){
+                symbol_table[ind].size=4;
+            }
+            else {
+                symbol_table[ind].size=1;
+            }
+            symbol_table[ind].off=offset;
+            offset+=symbol_table[ind].size;
+            symbol_table[ind].scope=strdup("local");
             ind++;  
         }  
         else if(c == 'C') {
+            //Only considering integer constants
             symbol_table[ind].id_name=strdup(yytext);
-            symbol_table[ind].data_type=strdup("CONST");
             symbol_table[ind].line_no=countn;
-            symbol_table[ind].type=strdup("Constant");   
+            symbol_table[ind].data_type=strdup("CONST");     
+            symbol_table[ind].type=strdup("Constant");
+            symbol_table[ind].size=2;
+            symbol_table[ind].off=offset;
+            offset+=symbol_table[ind].size;
+            symbol_table[ind].scope=strdup("local");   
             ind++;  
         }  
         else if(c == 'F') {
             symbol_table[ind].id_name=strdup(yytext);
-            symbol_table[ind].data_type=strdup(type);
             symbol_table[ind].line_no=countn;
-            symbol_table[ind].type=strdup("Function");   
+            symbol_table[ind].data_type=strdup("-");     
+            symbol_table[ind].type=strdup("Func");
+            symbol_table[ind].size=1;
+            symbol_table[ind].off=offset;
+            offset+=symbol_table[ind].size;
+            symbol_table[ind].scope=strdup("local");   
             ind++;  
         }
     }
@@ -178,7 +211,7 @@ int lookup(char *id) {
 	int i;
 	for(i=ind-1; i>=0; i--) {
 		if(strcmp(symbol_table[i].id_name, id)==0) {
-            printf("Parsing error: Rentry in Symbol Table - %s\n\n",id);
+            printf("Parsing Error: Rentry in Symbol Table - %s\n\n",id);
 			exit(0);
 		}
 	}

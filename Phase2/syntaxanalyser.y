@@ -14,12 +14,15 @@
 
     struct dataType {
         char * id_name;
-        char * data_type;
         char * type;
         int line_no;
+        int offset;
+        char * scope;
+        int size;
     } symbol_table[40];
 
     int ind=0;
+    int offset=0;
     int exists;
     char type[10];
     extern int countn;
@@ -137,36 +140,31 @@ void add(char c) {
   exists=lookup(yytext);
   if(!exists){
         if(c == 'H') {
-            symbol_table[ind].id_name=strdup(yytext);        
-            symbol_table[ind].data_type=strdup(type);     
+            symbol_table[ind].id_name=strdup(yytext);            
             symbol_table[ind].line_no=countn;    
             symbol_table[ind].type=strdup("Header");
             ind++;  
         }  
         else if(c == 'K') {
             symbol_table[ind].id_name=strdup(yytext);
-            symbol_table[ind].data_type=strdup("-");
             symbol_table[ind].line_no=countn;
             symbol_table[ind].type=strdup("Keyword\t");   
             ind++;  
         }  
         else if(c == 'V') {
             symbol_table[ind].id_name=strdup(yytext);
-            symbol_table[ind].data_type=strdup(type);
             symbol_table[ind].line_no=countn;
-            symbol_table[ind].type=strdup("Variable");   
+            symbol_table[ind].type=strdup(type);   
             ind++;  
         }  
         else if(c == 'C') {
             symbol_table[ind].id_name=strdup(yytext);
-            symbol_table[ind].data_type=strdup("CONST");
             symbol_table[ind].line_no=countn;
             symbol_table[ind].type=strdup("Constant");   
             ind++;  
         }  
         else if(c == 'F') {
             symbol_table[ind].id_name=strdup(yytext);
-            symbol_table[ind].data_type=strdup(type);
             symbol_table[ind].line_no=countn;
             symbol_table[ind].type=strdup("Function");   
             ind++;  
@@ -180,7 +178,7 @@ int lookup(char *id) {
 		if(strcmp(symbol_table[i].id_name, id)==0) {
             printf("Parsing error: Rentry in Symbol Table - %s\n\n",id);
 			exit(0);
-		}
+		}a
 	}
 	return 0;
 }
