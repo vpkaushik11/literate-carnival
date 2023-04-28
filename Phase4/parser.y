@@ -4,7 +4,7 @@
     #include<stdlib.h>
     #include<ctype.h>
     #include"lex.yy.c"
-    #include<queue>
+    #include <queue>
 
     void yyerror(const char *s);
     int yylex();
@@ -14,8 +14,11 @@
     int lookup(char *);
     struct node* makenode(struct node *left, struct node *right, char *token);
     void printInorder(struct node *);
+    void check_declaration(char *);
+	int check_types(char *, char *);
+	char *get_type(char *);
     void printLevelOrder(struct node*);
-
+    
     struct dataType {
         char * id_name;
         char * type;
@@ -41,6 +44,17 @@
     int exists;
     char type[10];
     extern int countn;
+    int label=0;
+	char buff[100];
+    char errors[10][100];
+    char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "while", "main", "return", "include"};
+    int sem_errors=0;
+
+	int ic_idx=0;
+	int temp_var=0;
+	int label=0;
+	int is_while=0;
+	char icg[50][100];
 %}
 
 %union{
@@ -49,15 +63,15 @@
         struct node* nd;
     } node_obj;
     struct var_name2 { 
-			char name[100]; 
-			struct node* nd;
-			char type[5];
+		char name[100]; 
+		struct node* nd;
+		char type[10];
 	} node_obj2;
     struct var_name3 {
-			char name[100];
-			struct node* nd;
-			char if_body[5];
-			char else_body[5];
+		char name[100];
+		struct node* nd;
+		char if_body[5];
+		char else_body[5];
 	} node_obj3; 
 }
 
@@ -90,9 +104,19 @@ datatype: INT               { insert_type(); }
         ;
 
 body: body body                                             { $$.nd = makenode($1.nd, $2.nd, "statements"); }
-    | WHILE { add('K'); } '(' condition ')' '{' body '}'    { $$.nd = makenode($4.nd, $7.nd, "While"); }
+    | WHILE { add('K'); is_while = 1;} '(' condition ')' '{' body '}'    { 
+            $$.nd = makenode($4.nd, $7.nd, "While");
+	        sprintf(icg[ic_idx++], buff);
+	        sprintf(icg[ic_idx++], "JUMP to %s\n", $4.if_body);
+	        sprintf(icg[ic_idx++], "\nLABEL %s:\n", $4.else_body);
+        }
     | IF  { add('K'); } '(' condition ')' '{' body '}' else { struct node *iff = makenode($4.nd, $7.nd, $1.name);  
                                                               $$.nd = makenode(iff, $9.nd, "if-else"); }
+    | IF { add('K'); is_while = 0; } '(' condition ')' { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $4.if_body); } '{' body '}' { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $4.else_body); } else { 
+	        struct node *iff = makenode($4.nd, $8.nd, $1.name); 
+	        $$.nd = mknode(iff, $11.nd, "if-else"); 
+	        sprintf(icg[ic_idx++], "GOTO next\n");
+        }
     | statement ';'                                         { $$.nd = $1.nd; }
     ;
 
@@ -103,10 +127,80 @@ condition: expression relop expression                      { $$.nd = makenode($
         |                                                   { $$.nd = NULL; }
         ;
 
-statement: datatype ID { add('V'); } init                   { $2.nd = makenode(NULL, NULL, $2.name); 
-                                                            $$.nd = makenode($2.nd, $4.nd, "declaration"); }
-        | ID '=' expression                                 { $1.nd = makenode(NULL, NULL, $1.name); 
-                                                            $$.nd = makenode($1.nd, $3.nd, "="); }
+statement: datatype ID { add('V'); } init                   
+        {
+            $2.nd = makenode(NULL, NULL, $2.name);  
+            int t = check_types($1.name, $4.type);
+            if(t>0) {   
+                if(t == 1) {    
+                    struct node *temp = makenode(NULL, $4.nd, "floattoint");
+                    $$.nd = makenode($2.nd, temp, "declaration");   
+                }   
+                else if(t == 2) {
+                    struct node *temp = makenode(NULL, $4.nd, "inttofloat");
+                    $$.nd = makenode($2.nd, temp, "declaration");   
+                }   
+                else if(t == 3) {    
+                    struct node *temp = makenode(NULL, $4.nd, "chartoint");
+                    $$.nd = makenode($2.nd, temp, "declaration");   
+                }   
+                else if(t == 4) {    
+                    struct node *temp = makenode(NULL, $4.nd, "inttochar");
+                    $$.nd = makenode($2.nd, temp, "declaration");   
+                }   
+                else if(t == 5) {    
+                    struct node *temp = makenode(NULL, $4.nd, "chartofloat");
+                    $$.nd = makenode($2.nd, temp, "declaration");   
+                }   
+                else {   
+                    struct node *temp = makenode(NULL, $4.nd, "floattochar");
+                    $$.nd = makenode($2.nd, temp, "declaration");   
+                }
+            }
+            else {   
+                $$.nd = makenode($2.nd, $4.nd, "declaration");  
+            }
+        }
+        | ID { check_declaration($1.name); }'=' expression  { 
+            $1.nd = makenode(NULL, NULL, $1.name);
+            char *id_type = get_type($1.name);  
+            if(strcmp(id_type, $4.type)) {  
+                if(!strcmp(id_type, "int")) {   
+                    //declaration is int but intialization is float
+                    if(!strcmp($4.type, "float")) {    
+                        struct node *temp = makenode(NULL, $4.nd, "floattoint");
+                        $$.nd = makenode($1.nd, temp, "=");    
+                    }
+                    //declaration is int but intialization is char  
+                    else {    
+                        struct node *temp = makenode(NULL, $4.nd, "chartoint");
+                        $$.nd = makenode($1.nd, temp, "=");    
+                    }     
+                }  
+                else if(!strcmp(id_type, "float")) {   
+                    if(!strcmp($4.type, "int")) {    
+                        struct node *temp = makenode(NULL, $4.nd, "inttofloat");
+                        $$.nd = makenode($1.nd, temp, "=");    
+                    }   
+                    else {    
+                        struct node *temp = makenode(NULL, $4.nd, "chartofloat");
+                        $$.nd = makenode($1.nd, temp, "=");    
+                    }     
+                }  
+                else {   
+                    if(!strcmp($4.type, "int")) {    
+                        struct node *temp = makenode(NULL, $4.nd, "inttochar");
+                        $$.nd = makenode($1.nd, temp, "=");    
+                    }   
+                    else {    
+                        struct node *temp = makenode(NULL, $4.nd, "floattochar");
+                        $$.nd = makenode($1.nd, temp, "=");    
+                    }
+                } 
+            } 
+            else {  
+                $$.nd = makenode($1.nd, $4.nd, "=");  
+            }}
         | ID relop expression                               { $1.nd = makenode(NULL, NULL, $1.name); 
                                                             $$.nd = makenode($1.nd, $3.nd, $2.name); }
         | ID UNARY                                          { $1.nd = makenode(NULL, NULL, $1.name); 
@@ -131,12 +225,133 @@ relop: LT
     | NE
     ;
 
-init:  '=' value                                            { $$.nd = $2.nd; }
-    |                                                       { $$.nd = makenode(NULL, NULL, "NULL"); }
+init: ',' ID { add('V'); } init                             {
+    sprintf($$.type, "null"); 
+    $$.nd = makenode(NULL, NULL, "NULL"); 
+    strcpy($$.name, "NULL");
+    $2.nd = makenode(NULL, NULL, $2.name);
+    int t = check_types(type, $4.type);
+    if(t>0) {   
+        if(t == 1) {    
+            struct node *temp = makenode(NULL, $4.nd, "floattoint");
+            $$.nd = makenode($2.nd, temp, "declaration");   
+        }   
+        else if(t == 2) {
+            struct node *temp = makenode(NULL, $4.nd, "inttofloat");
+            $$.nd = makenode($2.nd, temp, "declaration");   
+        }   
+        else if(t == 3) {    
+            struct node *temp = makenode(NULL, $4.nd, "chartoint");
+            $$.nd = makenode($2.nd, temp, "declaration");   
+        }   
+        else if(t == 4) {    
+            struct node *temp = makenode(NULL, $4.nd, "inttochar");
+            $$.nd = makenode($2.nd, temp, "declaration");   
+        }   
+        else if(t == 5) {    
+            struct node *temp = makenode(NULL, $4.nd, "chartofloat");
+            $$.nd = makenode($2.nd, temp, "declaration");   
+        }   
+        else {   
+            struct node *temp = makenode(NULL, $4.nd, "floattochar");
+            $$.nd = makenode($2.nd, temp, "declaration");   
+        }
+    }
+    else {   
+        $$.nd = makenode($2.nd, $4.nd, "declaration");  
+    }}
+    | '=' value ',' ID { add('V'); } init                   {
+        $$.nd = $2.nd; 
+        sprintf($$.type, $2.type); 
+        strcpy($$.name, $2.name);
+        $4.nd = makenode(NULL, NULL, $4.name);
+        int t = check_types(type, $6.type);
+        if(t>0) {   
+            if(t == 1) {    
+                struct node *temp = makenode(NULL, $6.nd, "floattoint");
+                $$.nd = makenode($4.nd, temp, "declaration");   
+            }   
+            else if(t == 2) {
+                struct node *temp = makenode(NULL, $6.nd, "inttofloat");
+                $$.nd = makenode($4.nd, temp, "declaration");   
+            }   
+            else if(t == 3) {    
+                struct node *temp = makenode(NULL, $6.nd, "chartoint");
+                $$.nd = makenode($4.nd, temp, "declaration");   
+            }   
+            else if(t == 4) {    
+                struct node *temp = makenode(NULL, $6.nd, "inttochar");
+                $$.nd = makenode($4.nd, temp, "declaration");   
+            }   
+            else if(t == 5) {    
+                struct node *temp = makenode(NULL, $6.nd, "chartofloat");
+                $$.nd = makenode($4.nd, temp, "declaration");   
+            }   
+            else {   
+                struct node *temp = makenode(NULL, $6.nd, "floattochar");
+                $$.nd = makenode($4.nd, temp, "declaration");   
+            }
+        }
+        else {   
+            $$.nd = makenode($4.nd, $6.nd, "declaration");  
+        }}
+    | '=' value                                             
+        { 
+            $$.nd = $2.nd; 
+            sprintf($$.type, $2.type); 
+            strcpy($$.name, $2.name); 
+        }
+    |   { 
+            sprintf($$.type, "null"); 
+            $$.nd = makenode(NULL, NULL, "NULL"); 
+            strcpy($$.name, "NULL"); 
+        }
     ;
 
-expression: expression arithmetic expression                { $$.nd = makenode($1.nd, $3.nd, $2.name); }
-          | value                                           { $$.nd = $1.nd; }
+expression: expression arithmetic expression                
+            { if(!strcmp($1.type, $3.type)) {  
+                sprintf($$.type, $1.type);  
+                $$.nd = makenode($1.nd, $3.nd, $2.name);  
+            }
+            //Expr1 and expr2 are different types 
+            else {  
+                if(!strcmp($1.type, "int") && !strcmp($3.type, "float")) {
+                    struct node *temp = makenode(NULL, $1.nd, "inttofloat");
+                    sprintf($$.type, $3.type);   
+                    $$.nd = makenode(temp, $3.nd, $2.name);  
+                }  
+                else if(!strcmp($1.type, "float") && !strcmp($3.type, "int")) {   
+                    struct node *temp = makenode(NULL, $3.nd, "inttofloat");
+                    sprintf($$.type, $1.type);   
+                    $$.nd = makenode($1.nd, temp, $2.name);  
+                }  
+                else if(!strcmp($1.type, "int") && !strcmp($3.type, "char")){   
+                    struct node *temp = makenode(NULL, $3.nd, "chartoint");
+                    sprintf($$.type, $1.type);   
+                    $$.nd = makenode($1.nd, temp, $2.name);  
+                }  
+                else if(!strcmp($1.type, "char") && !strcmp($3.type, "int")) {   
+                    struct node *temp = makenode(NULL, $1.nd, "chartoint");
+                    sprintf($$.type, $3.type);   
+                    $$.nd = makenode(temp, $3.nd, $2.name);  
+                }  
+                else if(!strcmp($1.type, "float") && !strcmp($3.type, "char")) {   
+                    struct node *temp = makenode(NULL, $3.nd, "chartofloat");
+                    sprintf($$.type, $1.type);   
+                    $$.nd = makenode($1.nd, temp, $2.name);  
+                }  
+                else {   
+                    struct node *temp = makenode(NULL, $1.nd, "chartofloat");
+                    sprintf($$.type, $3.type);   
+                    $$.nd = makenode(temp, $3.nd, $2.name);  
+                } 
+            }}
+          | value                                           
+            { 
+                strcpy($$.name, $1.name); 
+                sprintf($$.type, $1.type); 
+                $$.nd = $1.nd;
+            }
           ;
 
 arithmetic: ADD
@@ -145,10 +360,16 @@ arithmetic: ADD
           | DIV
           ;
 
-value: NUM                                                  {$$.nd = makenode(NULL, NULL, $1.name);}         
-    | FLOAT_NUM                                             {$$.nd = makenode(NULL, NULL, $1.name);}
-    | CHARACTER                                             {$$.nd = makenode(NULL, NULL, $1.name);}
-    | ID                                                    {$$.nd = makenode(NULL, NULL, $1.name);}
+value: NUM                                                  {strcpy($$.name, $1.name); sprintf($$.type, "int");
+                                                            $$.nd = makenode(NULL, NULL, $1.name);}         
+    | FLOAT_NUM                                             {$$.nd = makenode(NULL, NULL, $1.name);
+                                                            strcpy($$.name, $1.name); sprintf($$.type, "float");}
+    | CHARACTER                                             {$$.nd = makenode(NULL, NULL, $1.name);
+                                                            strcpy($$.name, $1.name); sprintf($$.type, "char");}
+    | ID                                                    {strcpy($$.name, $1.name); char *id_type = get_type($1.name); 
+                                                            sprintf($$.type, id_type); 
+                                                            check_declaration($1.name); 
+                                                            $$.nd = makenode(NULL, NULL, $1.name);}
     ;
 
 return: RETURN { add('K'); } NUM ';'                        {$1.nd = makenode(NULL, NULL, "return"); 
@@ -161,7 +382,8 @@ int main() {
     yyin=fopen("input.c","r");
     printf("\n");
     yyparse();
-   printf("Syntax Analyser: Parsing Successful\n\nSymbol Table:\n");
+    printf("__________________________________________________________________________________________________________________________\n");
+    printf("Syntax Analysis:\nParsing Successful\n\nSymbol Table:\n");
 
     printf("\nSYMBOL\t\tTYPE\t\tDATATYPE\tSIZE\t\tOFFSET\t\tSCOPE\n");
 	printf("______________________________________________________________________________________\n\n");
@@ -175,7 +397,17 @@ int main() {
 	}
     printf("\n\nSyntax Tree:\n\n");
     printLevelOrder(head);
-	printf("\n\n");
+    printf("\n__________________________________________________________________________________________________________________________\n");
+	printf("Semantic Analysis:\n");
+    	if(sem_errors>0) {
+		    printf("Semantic analysis completed with %d errors:\n", sem_errors);
+		for(int i=0; i<sem_errors; i++){
+			printf("  %s", errors[i]);
+		}
+	} else {
+		printf("Semantic analysis completed with no errors");
+	}
+    printf("\n\n");
     return 0;
 }
 void yyerror(const char* msg) {
@@ -188,6 +420,15 @@ void insert_type() {
 }
 
 void add(char c) {
+  if(c == 'V') {  
+    for(int i=0; i<10; i++) {   
+        if(!strcmp(reserved[i], strdup(yytext))) {
+            sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" is a keyword.\n", countn+1, yytext);
+            sem_errors++;    
+            return;
+        }  
+    } 
+  }
   exists=lookup(yytext);
   if(!exists){
         if(c == 'H') {
@@ -246,7 +487,7 @@ void add(char c) {
         else if(c == 'F') {
             symbol_table[ind].id_name=strdup(yytext);
             symbol_table[ind].line_no=countn;
-            symbol_table[ind].data_type=strdup("-");     
+            symbol_table[ind].data_type=strdup(type);    
             symbol_table[ind].type=strdup("Func");
             symbol_table[ind].size=1;
             symbol_table[ind].off=offset;
@@ -255,14 +496,17 @@ void add(char c) {
             ind++;  
         }
     }
+    else if(c == 'V' && exists) {
+        sprintf(errors[sem_errors], "Line %d: Multiple declaration of variable \"%s\" not allowed!\n", countn+1, yytext);  
+        sem_errors++;
+    }
 }
 
 int lookup(char *id) {
 	int i;
 	for(i=ind-1; i>=0; i--) {
 		if(strcmp(symbol_table[i].id_name, id)==0) {
-            printf("Parsing Error: Rentry in Symbol Table - %s\n\n",id);
-			exit(0);
+            return 1;
 		}
 	}
 	return 0;
@@ -309,4 +553,35 @@ void printLevelOrder(struct node* root) {
         }
        printf("\n");
     }
+}
+
+void check_declaration(char *c) {    
+    exists = lookup(c);    
+    if(!exists) {        
+        sprintf(errors[sem_errors], "Line %d: Variable \"%s\" has not been declared.\n", countn+1, c);  
+        sem_errors++;    
+    }
+}
+
+int check_types(char *type1, char *type2) { 
+    // declaration with no init 
+    if(!strcmp(type2, "null")) return -1; 
+    // both datatypes are same 
+    if(!strcmp(type1, type2)) return 0; 
+    // both datatypes are different 
+    if(!strcmp(type1, "int") && !strcmp(type2, "float")) return 1;
+    if(!strcmp(type1, "float") && !strcmp(type2, "int")) return 2;
+    if(!strcmp(type1, "int") && !strcmp(type2, "char")) return 3;
+    if(!strcmp(type1, "char") && !strcmp(type2, "int")) return 4;
+    if(!strcmp(type1, "float") && !strcmp(type2, "char")) return 5;
+    if(!strcmp(type1, "char") && !strcmp(type2, "float")) return 6;
+}
+
+char *get_type(char *var) { 
+    for(int i=0; i<ind; i++) {  
+        if(!strcmp(symbol_table[i].id_name, var)) {   
+            return symbol_table[i].data_type;  
+        }
+    }
+    return NULL;
 }
