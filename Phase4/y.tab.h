@@ -56,8 +56,8 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     VOID = 258,                    /* VOID  */
     CHARACTER = 259,               /* CHARACTER  */
-    PRINTFF = 260,                 /* PRINTFF  */
-    SCANFF = 261,                  /* SCANFF  */
+    PRINTF = 260,                  /* PRINTF  */
+    SCANF = 261,                   /* SCANF  */
     INT = 262,                     /* INT  */
     FLOAT = 263,                   /* FLOAT  */
     CHAR = 264,                    /* CHAR  */
@@ -95,8 +95,8 @@ extern int yydebug;
 #define YYUNDEF 257
 #define VOID 258
 #define CHARACTER 259
-#define PRINTFF 260
-#define SCANFF 261
+#define PRINTF 260
+#define SCANF 261
 #define INT 262
 #define FLOAT 263
 #define CHAR 264
@@ -129,27 +129,25 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 52 "parser2.y"
- struct var_name { 
-			char name[100]; 
-			struct node* nd;
-		} nd_obj;
+#line 46 "parser.y"
 
-		struct var_name2 { 
+    struct var_name {
+        char name[100];
+        struct node* nd;
+    } node_obj;
+    struct var_name2 { 
 			char name[100]; 
 			struct node* nd;
 			char type[5];
-		} nd_obj2; 
-
-		struct var_name3 {
+	} node_obj2;
+    struct var_name3 {
 			char name[100];
 			struct node* nd;
 			char if_body[5];
 			char else_body[5];
-		} nd_obj3;
-	
+	} node_obj3; 
 
-#line 153 "y.tab.h"
+#line 151 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
