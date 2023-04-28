@@ -68,7 +68,7 @@
 		} nd_obj3;
 	} 
 %token VOID 
-%token <nd_obj> CHARACTER PRINTFF SCANFF INT FLOAT CHAR WHILE IF ELSE TRUE FALSE NUMBER FLOAT_NUM ID LE GE EQ NE GT LT AND OR STR ADD MULTIPLY DIVIDE SUBTRACT UNARY INCLUDE RETURN 
+%token <nd_obj> CHARACTER PRINTFF SCANFF INT FLOAT CHAR WHILE IF ELSE TRUE FALSE NUM FLOAT_NUM ID LE GE EQ NE GT LT AND OR STR ADD MUL DIV SUB UNARY INCLUDE RETURN 
 %type <nd_obj> headers main body return datatype statement arithmetic relop program else
 %type <nd_obj2> init value expression
 %type <nd_obj3> condition
@@ -99,10 +99,11 @@ body: WHILE { add('K'); is_while = 1; } '(' condition ')' '{' body '}'{
     // body is 11, st1 is 4,  st2 is 8, cond is 6
 	// struct node *temp = mknode($6.nd, $8.nd, "CONDITION"); 
 	// struct node *temp2 = mknode($4.nd, temp, "CONDITION"); 
-    struct node *whi = ($4.nd, $8.nd, $1.name)
+    struct node *whi = ($4.nd, $7.nd, $1.name)
 	// $$.nd = mknode(temp2, $11.nd, $1.name); 
-	$$.nd = mknode(whi, $8.nd, "WHILE"); 
-	sprintf(icg[ic_idx++], buff);
+	$$.nd = mknode(whi, $7.nd, "WHILE"); 
+	
+    sprintf(icg[ic_idx++], buff);
 	sprintf(icg[ic_idx++], "JUMP to %s\n", $4.if_body);
 	sprintf(icg[ic_idx++], "\nLABEL %s:\n", $4.else_body);
 }
@@ -293,9 +294,9 @@ expression: expression arithmetic expression {
 ;
 
 arithmetic: ADD 
-| SUBTRACT 
-| MULTIPLY
-| DIVIDE
+| SUB 
+| MUL
+| DIV
 ;
 
 relop: LT
@@ -306,7 +307,7 @@ relop: LT
 | NE
 ;
 
-value: NUMBER { strcpy($$.name, $1.name); sprintf($$.type, "int"); add('C'); $$.nd = mknode(NULL, NULL, $1.name); }
+value: NUM { strcpy($$.name, $1.name); sprintf($$.type, "int"); add('C'); $$.nd = mknode(NULL, NULL, $1.name); }
 | FLOAT_NUM { strcpy($$.name, $1.name); sprintf($$.type, "float"); add('C'); $$.nd = mknode(NULL, NULL, $1.name); }
 | CHARACTER { strcpy($$.name, $1.name); sprintf($$.type, "char"); add('C'); $$.nd = mknode(NULL, NULL, $1.name); }
 | ID { strcpy($$.name, $1.name); char *id_type = get_type($1.name); sprintf($$.type, id_type); check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name); }
@@ -322,7 +323,7 @@ int main() {
     yyparse();
     printf("\n\n");
 	printf("\t\t\t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
-	printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
+	printf("\nSYMBOL   DATATYPE   TYPE   LINE NUM \n");
 	printf("_______________________________________\n\n");
 	int i=0;
 	for(i=0; i<count; i++) {
