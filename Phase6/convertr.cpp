@@ -115,9 +115,6 @@ int main() {
         }
         ICG.push_back(vec);
     }
-    for(auto it : ICG){
-
-    }
     vector<Quadruple> q = icg_to_quadruples(ICG);
     for(auto it : q){
         cout << it.opcode << " " << it.arg1 << " " << it.arg2 << " "<< it.result << endl;
