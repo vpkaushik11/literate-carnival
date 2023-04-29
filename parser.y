@@ -400,6 +400,7 @@ return: RETURN { add('K'); } NUM ';'                        {$1.nd = makenode(NU
 %%
 int main() {
     yyin=fopen("input.c","r");
+    FILE *out = fopen("output.txt", "w");
     printf("\n");
     printf("_____________________________________________________________________________________________________________________\n");
     printf("\nPhase 1-Lexical Analyser:\n\n");
@@ -435,6 +436,7 @@ int main() {
     printf("Three address code succesfully generated:\n\n");
 	for(int i=0; i<icgind; i++){
 		printf("%s", icg[i]);
+        fprintf(out, "%s", icg[i]);
 	}
     printf("\n___________________________________________________________________________________________________________________\n");
 	printf("\n\n");
