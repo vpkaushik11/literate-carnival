@@ -2,10 +2,6 @@
 #include<string.h>
 
 int main() {
-    int a=1;
-    int z=3;
-    while(a<z){
-        a++;
-    }
+    int b=5.3;
     return 1;
 }

@@ -84,8 +84,11 @@
     int lookup(char *);
     struct node* makenode(struct node *left, struct node *right, char *token);
     void printInorder(struct node *);
+    void check_declaration(char *);
+	int check_types(char *, char *);
+	char *get_type(char *);
     void printLevelOrder(struct node*);
-
+    
     struct dataType {
         char * id_name;
         char * type;
@@ -111,8 +114,13 @@
     int exists;
     char type[10];
     extern int countn;
+    int label=0;
+	char buff[100];
+    char errors[10][100];
+    char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "for", "main", "return", "include"};
+    int sem_errors=0;
 
-#line 116 "y.tab.c"
+#line 124 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -231,25 +239,25 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 46 "parser.y"
+#line 54 "parser.y"
 
     struct var_name {
         char name[100];
         struct node* nd;
     } node_obj;
     struct var_name2 { 
-			char name[100]; 
-			struct node* nd;
-			char type[5];
+		char name[100]; 
+		struct node* nd;
+		char type[10];
 	} node_obj2;
     struct var_name3 {
-			char name[100];
-			struct node* nd;
-			char if_body[5];
-			char else_body[5];
+		char name[100];
+		struct node* nd;
+		char if_body[5];
+		char else_body[5];
 	} node_obj3; 
 
-#line 253 "y.tab.c"
+#line 261 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -324,15 +332,18 @@ enum yysymbol_kind_t
   YYSYMBOL_52_3 = 52,                      /* $@3  */
   YYSYMBOL_53_4 = 53,                      /* $@4  */
   YYSYMBOL_54_5 = 54,                      /* $@5  */
-  YYSYMBOL_else = 55,                      /* else  */
-  YYSYMBOL_56_6 = 56,                      /* $@6  */
-  YYSYMBOL_relop = 57,                     /* relop  */
-  YYSYMBOL_init = 58,                      /* init  */
-  YYSYMBOL_expression = 59,                /* expression  */
-  YYSYMBOL_arithmetic = 60,                /* arithmetic  */
-  YYSYMBOL_value = 61,                     /* value  */
-  YYSYMBOL_return = 62,                    /* return  */
-  YYSYMBOL_63_7 = 63                       /* $@7  */
+  YYSYMBOL_55_6 = 55,                      /* $@6  */
+  YYSYMBOL_else = 56,                      /* else  */
+  YYSYMBOL_57_7 = 57,                      /* $@7  */
+  YYSYMBOL_relop = 58,                     /* relop  */
+  YYSYMBOL_init = 59,                      /* init  */
+  YYSYMBOL_60_8 = 60,                      /* $@8  */
+  YYSYMBOL_61_9 = 61,                      /* $@9  */
+  YYSYMBOL_expression = 62,                /* expression  */
+  YYSYMBOL_arithmetic = 63,                /* arithmetic  */
+  YYSYMBOL_value = 64,                     /* value  */
+  YYSYMBOL_return = 65,                    /* return  */
+  YYSYMBOL_66_10 = 66                      /* $@10  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -660,16 +671,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  4
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   134
+#define YYLAST   142
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  42
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  22
+#define YYNNTS  25
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  54
+#define YYNRULES  59
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  97
+#define YYNSTATES  106
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   288
@@ -719,14 +730,14 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_int16 yyrline[] =
 {
-       0,    74,    74,    79,    80,    83,    86,    87,    88,    89,
-      92,    93,    93,    94,    94,    96,    99,   100,   101,   102,
-     103,   106,   106,   108,   110,   112,   115,   118,   118,   119,
-     119,   122,   122,   123,   126,   127,   128,   129,   130,   131,
-     134,   135,   138,   139,   142,   143,   144,   145,   148,   149,
-     150,   151,   154,   154,   156
+       0,    82,    82,    87,    88,    91,    94,    95,    96,    97,
+     100,   101,   101,   102,   102,   104,   107,   108,   109,   110,
+     111,   114,   114,   145,   145,   184,   186,   189,   192,   192,
+     193,   193,   196,   196,   197,   200,   201,   202,   203,   204,
+     205,   208,   208,   242,   242,   276,   279,   284,   321,   326,
+     327,   328,   329,   332,   334,   336,   338,   344,   344,   346
 };
 #endif
 
@@ -748,8 +759,9 @@ static const char *const yytname[] =
   "AND", "OR", "STR", "ADD", "MUL", "DIV", "SUB", "UNARY", "INCLUDE",
   "RETURN", "'('", "')'", "'{'", "'}'", "';'", "'='", "','", "'&'",
   "$accept", "program", "headers", "main", "datatype", "body", "$@1",
-  "$@2", "condition", "statement", "$@3", "$@4", "$@5", "else", "$@6",
-  "relop", "init", "expression", "arithmetic", "value", "return", "$@7", YY_NULLPTR
+  "$@2", "condition", "statement", "$@3", "$@4", "$@5", "$@6", "else",
+  "$@7", "relop", "init", "$@8", "$@9", "expression", "arithmetic",
+  "value", "return", "$@10", YY_NULLPTR
 };
 
 static const char *
@@ -759,7 +771,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-36)
+#define YYPACT_NINF (-55)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -773,16 +785,17 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-     -28,   -36,    12,    57,   -36,   -36,   -36,   -36,   -36,   -28,
-     -21,    -2,    -7,   -36,    -4,    94,   -36,   -36,   -36,   -36,
-      95,    16,    19,    65,    -9,     1,     4,     5,     6,   -36,
-     -36,   -36,   -36,   -36,   -36,   -36,    10,    10,   -36,   -36,
-     -36,    94,    21,   -36,    17,    33,    77,    77,   -36,   -36,
-     -36,   -36,    18,   -36,    18,     3,    47,   -36,    26,    38,
-     -36,   -36,    45,   101,    49,   -36,   -36,   -36,   -36,    10,
-      10,   -36,    48,   -36,    44,    51,    10,    52,    18,   -36,
-     -36,    78,    94,    18,    94,    71,     0,    13,   -36,   -36,
-      96,   -36,   -36,    73,    94,    46,   -36
+     -29,   -55,    11,    70,   -55,   -55,   -55,   -55,   -55,   -29,
+     -20,    10,    -2,   -55,    35,    87,   -55,   -55,   -55,   -55,
+      88,    28,    29,    58,    36,    13,    46,    47,    49,   -55,
+     -55,   -55,   -55,   -55,   -55,   -55,    48,     9,   -55,   -55,
+     -55,    87,    62,   -55,    59,    60,    24,    24,     9,   -55,
+     -55,   -55,   -55,    30,   -55,    -8,    69,   -55,    65,    61,
+     -55,   -55,    68,    94,    85,    30,   -55,   -55,   -55,   -55,
+       9,     9,   108,   -55,    67,   -55,    86,    90,     9,    92,
+      30,    89,   -55,   -55,   113,    87,    30,    87,   114,    -8,
+      97,    -1,    12,   -55,   -55,   -55,   -55,   121,    -8,   -55,
+     -55,   -55,    98,    87,    45,   -55
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -791,31 +804,32 @@ static const yytype_int8 yypact[] =
 static const yytype_int8 yydefact[] =
 {
        0,     4,     0,     0,     1,     9,     6,     7,     8,     3,
-       0,     0,     0,     5,     0,     0,    27,    29,    11,    13,
-       0,     0,     0,    54,     0,     0,     0,     0,     0,    36,
-      37,    38,    39,    35,    34,    25,     0,     0,    26,    21,
-      52,    10,     0,    15,     0,     0,    20,    20,    50,    48,
-      49,    51,    23,    43,    24,    41,     0,     2,     0,     0,
-      18,    19,     0,    17,     0,    44,    46,    47,    45,     0,
-       0,    22,     0,    28,     0,     0,     0,     0,    42,    40,
-      53,     0,     0,    16,     0,     0,     0,     0,    30,    12,
-      33,    31,    14,     0,     0,     0,    32
+       0,     0,     0,     5,     0,     0,    28,    30,    11,    13,
+      23,     0,     0,    59,     0,     0,     0,     0,     0,    37,
+      38,    39,    40,    36,    35,    26,     0,     0,    27,    21,
+      57,    10,     0,    15,     0,     0,    20,    20,     0,    55,
+      53,    54,    56,    25,    48,    46,     0,     2,     0,     0,
+      18,    19,     0,    17,     0,    24,    49,    51,    52,    50,
+       0,     0,     0,    22,     0,    29,     0,     0,     0,     0,
+      47,    45,    41,    58,     0,     0,    16,     0,     0,    46,
+       0,     0,     0,    43,    42,    31,    12,    34,    46,    32,
+      14,    44,     0,     0,     0,    33
 };
 
 /* YYPGOTO[NTERM-NUM].  */
-static const yytype_int8 yypgoto[] =
+static const yytype_int16 yypgoto[] =
 {
-     -36,   -36,   107,   -36,   109,   -15,   -36,   -36,    63,   -36,
-     -36,   -36,   -36,   -36,   -36,    64,   -36,   -35,   -36,    62,
-     -36,   -36
+     -55,   -55,   135,   -55,   133,   -15,   -55,   -55,    91,   -55,
+     -55,   -55,   -55,   -55,   -55,   -55,    74,   -54,   -55,   -55,
+     -36,   -55,    71,   -55,   -55
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
        0,     2,     9,    10,    22,    41,    27,    28,    62,    24,
-      55,    25,    26,    92,    93,    37,    71,    63,    69,    53,
-      42,    56
+      55,    36,    25,    26,   100,   102,    37,    73,    89,    98,
+      63,    70,    54,    42,    56
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -823,38 +837,40 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      23,    52,    54,     5,     1,    16,    17,     6,     7,     8,
-      18,    19,     4,    12,    48,    13,     5,    20,    16,    17,
-       6,     7,     8,    18,    19,    49,    50,    51,    14,    43,
-      20,    21,    15,    38,    78,    44,    39,    89,    45,    46,
-      47,    83,    70,    58,    21,    65,    66,    67,    68,     5,
-      90,    16,    17,     6,     7,     8,    18,    19,    57,    59,
-       5,    73,    72,    20,     6,     7,     8,    86,     5,    87,
-      16,    17,     6,     7,     8,    18,    19,    21,    74,    95,
-      75,    48,    20,    96,    77,    81,    80,    82,    84,     1,
-      60,    61,    49,    50,    51,    85,    21,     5,    40,    16,
-      17,     6,     7,     8,    18,    19,    88,     3,    91,    94,
-      64,    20,    11,    29,    30,    31,    32,    33,    34,    29,
-      30,    31,    32,    33,    34,    21,    35,    76,    65,    66,
-      67,    68,    79,     0,    36
+      23,    53,     5,     1,    16,    17,     6,     7,     8,    18,
+      19,     4,    65,    49,    12,     5,    20,    16,    17,     6,
+       7,     8,    18,    19,    50,    51,    52,    13,    49,    20,
+      21,    71,    72,    14,    80,    94,    96,    60,    61,    50,
+      51,    52,    86,    21,   101,    38,    39,    44,     5,    97,
+      16,    17,     6,     7,     8,    18,    19,    66,    67,    68,
+      69,     5,    20,    16,    17,     6,     7,     8,    18,    19,
+      91,    15,    92,     5,    43,    20,    21,     6,     7,     8,
+      45,    46,   105,    47,    74,    58,    59,    48,   104,    21,
+       5,    40,    16,    17,     6,     7,     8,    18,    19,    57,
+      75,    76,     1,    77,    20,    83,    29,    30,    31,    32,
+      33,    34,    29,    30,    31,    32,    33,    34,    21,    35,
+      79,    66,    67,    68,    69,    82,    85,    84,    87,    88,
+      90,    93,    95,    99,   103,     3,    11,    78,    64,     0,
+       0,     0,    81
 };
 
 static const yytype_int8 yycheck[] =
 {
-      15,    36,    37,     3,    32,     5,     6,     7,     8,     9,
-      10,    11,     0,    34,     4,    17,     3,    17,     5,     6,
-       7,     8,     9,    10,    11,    15,    16,    17,    35,    38,
-      17,    31,    36,    17,    69,    34,    17,    37,    34,    34,
-      34,    76,    39,    26,    31,    27,    28,    29,    30,     3,
-      37,     5,     6,     7,     8,     9,    10,    11,    37,    26,
-       3,    35,    15,    17,     7,     8,     9,    82,     3,    84,
-       5,     6,     7,     8,     9,    10,    11,    31,    40,    94,
-      35,     4,    17,    37,    35,    41,    38,    36,    36,    32,
-      13,    14,    15,    16,    17,    17,    31,     3,    33,     5,
-       6,     7,     8,     9,    10,    11,    35,     0,    12,    36,
-      47,    17,     3,    18,    19,    20,    21,    22,    23,    18,
-      19,    20,    21,    22,    23,    31,    31,    63,    27,    28,
-      29,    30,    70,    -1,    39
+      15,    37,     3,    32,     5,     6,     7,     8,     9,    10,
+      11,     0,    48,     4,    34,     3,    17,     5,     6,     7,
+       8,     9,    10,    11,    15,    16,    17,    17,     4,    17,
+      31,    39,    40,    35,    70,    89,    37,    13,    14,    15,
+      16,    17,    78,    31,    98,    17,    17,    34,     3,    37,
+       5,     6,     7,     8,     9,    10,    11,    27,    28,    29,
+      30,     3,    17,     5,     6,     7,     8,     9,    10,    11,
+      85,    36,    87,     3,    38,    17,    31,     7,     8,     9,
+      34,    34,    37,    34,    15,    26,    26,    39,   103,    31,
+       3,    33,     5,     6,     7,     8,     9,    10,    11,    37,
+      35,    40,    32,    35,    17,    38,    18,    19,    20,    21,
+      22,    23,    18,    19,    20,    21,    22,    23,    31,    31,
+      35,    27,    28,    29,    30,    17,    36,    41,    36,    40,
+      17,    17,    35,    12,    36,     0,     3,    63,    47,    -1,
+      -1,    -1,    71
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -863,14 +879,15 @@ static const yytype_int8 yystos[] =
 {
        0,    32,    43,    44,     0,     3,     7,     8,     9,    44,
       45,    46,    34,    17,    35,    36,     5,     6,    10,    11,
-      17,    31,    46,    47,    51,    53,    54,    48,    49,    18,
-      19,    20,    21,    22,    23,    31,    39,    57,    17,    17,
-      33,    47,    62,    38,    34,    34,    34,    34,     4,    15,
-      16,    17,    59,    61,    59,    52,    63,    37,    26,    26,
-      13,    14,    50,    59,    50,    27,    28,    29,    30,    60,
-      39,    58,    15,    35,    40,    35,    57,    35,    59,    61,
-      38,    41,    36,    59,    36,    17,    47,    47,    35,    37,
-      37,    12,    55,    56,    36,    47,    37
+      17,    31,    46,    47,    51,    54,    55,    48,    49,    18,
+      19,    20,    21,    22,    23,    31,    53,    58,    17,    17,
+      33,    47,    65,    38,    34,    34,    34,    34,    39,     4,
+      15,    16,    17,    62,    64,    52,    66,    37,    26,    26,
+      13,    14,    50,    62,    50,    62,    27,    28,    29,    30,
+      63,    39,    40,    59,    15,    35,    40,    35,    58,    35,
+      62,    64,    17,    38,    41,    36,    62,    36,    40,    60,
+      17,    47,    47,    17,    59,    35,    37,    37,    61,    12,
+      56,    59,    57,    36,    47,    37
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -878,10 +895,10 @@ static const yytype_int8 yyr1[] =
 {
        0,    42,    43,    44,    44,    45,    46,    46,    46,    46,
       47,    48,    47,    49,    47,    47,    50,    50,    50,    50,
-      50,    52,    51,    51,    51,    51,    51,    53,    51,    54,
-      51,    56,    55,    55,    57,    57,    57,    57,    57,    57,
-      58,    58,    59,    59,    60,    60,    60,    60,    61,    61,
-      61,    61,    63,    62,    62
+      50,    52,    51,    53,    51,    51,    51,    51,    54,    51,
+      55,    51,    57,    56,    56,    58,    58,    58,    58,    58,
+      58,    60,    59,    61,    59,    59,    59,    62,    62,    63,
+      63,    63,    63,    64,    64,    64,    64,    66,    65,    65
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -889,10 +906,10 @@ static const yytype_int8 yyr2[] =
 {
        0,     2,     8,     2,     1,     2,     1,     1,     1,     1,
        2,     0,     8,     0,     9,     2,     3,     1,     1,     1,
-       0,     0,     4,     3,     3,     2,     2,     0,     5,     0,
-       8,     0,     5,     0,     1,     1,     1,     1,     1,     1,
-       2,     0,     3,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     0,     4,     0
+       0,     0,     4,     0,     4,     3,     2,     2,     0,     5,
+       0,     8,     0,     5,     0,     1,     1,     1,     1,     1,
+       1,     0,     4,     0,     6,     2,     0,     3,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     0,     4,     0
 };
 
 
@@ -1356,276 +1373,486 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: headers main '(' ')' '{' body return '}'  */
-#line 74 "parser.y"
+#line 82 "parser.y"
                                                             { (yyvsp[-6].node_obj).nd = makenode((yyvsp[-2].node_obj).nd, (yyvsp[-1].node_obj).nd, "main"); 
                                                             (yyval.node_obj).nd = makenode((yyvsp[-7].node_obj).nd, (yyvsp[-6].node_obj).nd, "program"); 
                                                             head = (yyval.node_obj).nd; }
-#line 1364 "y.tab.c"
+#line 1381 "y.tab.c"
     break;
 
   case 3: /* headers: headers headers  */
-#line 79 "parser.y"
+#line 87 "parser.y"
                                                             { (yyval.node_obj).nd = makenode((yyvsp[-1].node_obj).nd, (yyvsp[0].node_obj).nd, "headers"); }
-#line 1370 "y.tab.c"
+#line 1387 "y.tab.c"
     break;
 
   case 4: /* headers: INCLUDE  */
-#line 80 "parser.y"
+#line 88 "parser.y"
                                                             { (yyval.node_obj).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name); }
-#line 1376 "y.tab.c"
+#line 1393 "y.tab.c"
     break;
 
   case 5: /* main: datatype ID  */
-#line 83 "parser.y"
+#line 91 "parser.y"
                             { add('F'); }
-#line 1382 "y.tab.c"
+#line 1399 "y.tab.c"
     break;
 
   case 6: /* datatype: INT  */
-#line 86 "parser.y"
+#line 94 "parser.y"
                             { insert_type(); }
-#line 1388 "y.tab.c"
+#line 1405 "y.tab.c"
     break;
 
   case 7: /* datatype: FLOAT  */
-#line 87 "parser.y"
+#line 95 "parser.y"
                             { insert_type(); }
-#line 1394 "y.tab.c"
+#line 1411 "y.tab.c"
     break;
 
   case 8: /* datatype: CHAR  */
-#line 88 "parser.y"
+#line 96 "parser.y"
                             { insert_type(); }
-#line 1400 "y.tab.c"
+#line 1417 "y.tab.c"
     break;
 
   case 9: /* datatype: VOID  */
-#line 89 "parser.y"
+#line 97 "parser.y"
                             { insert_type(); }
-#line 1406 "y.tab.c"
+#line 1423 "y.tab.c"
     break;
 
   case 10: /* body: body body  */
-#line 92 "parser.y"
+#line 100 "parser.y"
                                                             { (yyval.node_obj).nd = makenode((yyvsp[-1].node_obj).nd, (yyvsp[0].node_obj).nd, "statements"); }
-#line 1412 "y.tab.c"
+#line 1429 "y.tab.c"
     break;
 
   case 11: /* $@1: %empty  */
-#line 93 "parser.y"
+#line 101 "parser.y"
             { add('K'); }
-#line 1418 "y.tab.c"
+#line 1435 "y.tab.c"
     break;
 
   case 12: /* body: WHILE $@1 '(' condition ')' '{' body '}'  */
-#line 93 "parser.y"
+#line 101 "parser.y"
                                                             { (yyval.node_obj).nd = makenode((yyvsp[-4].node_obj3).nd, (yyvsp[-1].node_obj).nd, "While"); }
-#line 1424 "y.tab.c"
+#line 1441 "y.tab.c"
     break;
 
   case 13: /* $@2: %empty  */
-#line 94 "parser.y"
+#line 102 "parser.y"
           { add('K'); }
-#line 1430 "y.tab.c"
+#line 1447 "y.tab.c"
     break;
 
   case 14: /* body: IF $@2 '(' condition ')' '{' body '}' else  */
-#line 94 "parser.y"
+#line 102 "parser.y"
                                                             { struct node *iff = makenode((yyvsp[-5].node_obj3).nd, (yyvsp[-2].node_obj).nd, (yyvsp[-8].node_obj).name);  
                                                               (yyval.node_obj).nd = makenode(iff, (yyvsp[0].node_obj).nd, "if-else"); }
-#line 1437 "y.tab.c"
+#line 1454 "y.tab.c"
     break;
 
   case 15: /* body: statement ';'  */
-#line 96 "parser.y"
+#line 104 "parser.y"
                                                             { (yyval.node_obj).nd = (yyvsp[-1].node_obj).nd; }
-#line 1443 "y.tab.c"
+#line 1460 "y.tab.c"
     break;
 
   case 16: /* condition: expression relop expression  */
-#line 99 "parser.y"
+#line 107 "parser.y"
                                                             { (yyval.node_obj3).nd = makenode((yyvsp[-2].node_obj2).nd, (yyvsp[0].node_obj2).nd, (yyvsp[-1].node_obj).name); }
-#line 1449 "y.tab.c"
+#line 1466 "y.tab.c"
     break;
 
   case 17: /* condition: expression  */
-#line 100 "parser.y"
+#line 108 "parser.y"
                                                             { (yyval.node_obj3).nd = (yyvsp[0].node_obj2).nd; }
-#line 1455 "y.tab.c"
+#line 1472 "y.tab.c"
     break;
 
   case 18: /* condition: TRUE  */
-#line 101 "parser.y"
+#line 109 "parser.y"
                                                             { add('K'); (yyval.node_obj3).nd = NULL; }
-#line 1461 "y.tab.c"
+#line 1478 "y.tab.c"
     break;
 
   case 19: /* condition: FALSE  */
-#line 102 "parser.y"
+#line 110 "parser.y"
                                                             { add('K'); (yyval.node_obj3).nd = NULL; }
-#line 1467 "y.tab.c"
+#line 1484 "y.tab.c"
     break;
 
   case 20: /* condition: %empty  */
-#line 103 "parser.y"
+#line 111 "parser.y"
                                                             { (yyval.node_obj3).nd = NULL; }
-#line 1473 "y.tab.c"
+#line 1490 "y.tab.c"
     break;
 
   case 21: /* $@3: %empty  */
-#line 106 "parser.y"
+#line 114 "parser.y"
                        { add('V'); }
-#line 1479 "y.tab.c"
+#line 1496 "y.tab.c"
     break;
 
   case 22: /* statement: datatype ID $@3 init  */
-#line 106 "parser.y"
-                                                            { (yyvsp[-2].node_obj).nd = makenode(NULL, NULL, (yyvsp[-2].node_obj).name); 
-                                                            (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, (yyvsp[0].node_obj2).nd, "declaration"); }
-#line 1486 "y.tab.c"
+#line 114 "parser.y"
+                                                            {(yyvsp[-2].node_obj).nd = makenode(NULL, NULL, (yyvsp[-2].node_obj).name);  
+                                                            int t = check_types((yyvsp[-3].node_obj).name, (yyvsp[0].node_obj2).type);
+                                                            if(t>0) {   
+                                                                if(t == 1) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "floattoint");
+                                                                    (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 2) {
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "inttofloat");
+                                                                    (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 3) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartoint");
+                                                                    (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 4) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "inttochar");
+                                                                    (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 5) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartofloat");
+                                                                    (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else {   
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "floattochar");
+                                                                    (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }
+                                                            }
+                                                            else {   
+                                                                (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, (yyvsp[0].node_obj2).nd, "declaration");  
+                                                            }}
+#line 1532 "y.tab.c"
     break;
 
-  case 23: /* statement: ID '=' expression  */
-#line 108 "parser.y"
-                                                            { (yyvsp[-2].node_obj).nd = makenode(NULL, NULL, (yyvsp[-2].node_obj).name); 
-                                                            (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, (yyvsp[0].node_obj2).nd, "="); }
-#line 1493 "y.tab.c"
+  case 23: /* $@4: %empty  */
+#line 145 "parser.y"
+             { check_declaration((yyvsp[0].node_obj).name); }
+#line 1538 "y.tab.c"
     break;
 
-  case 24: /* statement: ID relop expression  */
-#line 110 "parser.y"
-                                                            { (yyvsp[-2].node_obj).nd = makenode(NULL, NULL, (yyvsp[-2].node_obj).name); 
-                                                            (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, (yyvsp[0].node_obj2).nd, (yyvsp[-1].node_obj).name); }
-#line 1500 "y.tab.c"
-    break;
-
-  case 25: /* statement: ID UNARY  */
-#line 112 "parser.y"
-                                                            { (yyvsp[-1].node_obj).nd = makenode(NULL, NULL, (yyvsp[-1].node_obj).name); 
-                                                            (yyvsp[0].node_obj).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name); 
-                                                            (yyval.node_obj).nd = makenode((yyvsp[-1].node_obj).nd, (yyvsp[0].node_obj).nd, "ITERATOR");}
-#line 1508 "y.tab.c"
-    break;
-
-  case 26: /* statement: UNARY ID  */
-#line 115 "parser.y"
-                                                            { (yyvsp[-1].node_obj).nd = makenode(NULL, NULL, (yyvsp[-1].node_obj).name); 
-                                                            (yyvsp[0].node_obj).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name); 
-                                                            (yyval.node_obj).nd = makenode((yyvsp[-1].node_obj).nd, (yyvsp[0].node_obj).nd, "ITERATOR"); }
-#line 1516 "y.tab.c"
-    break;
-
-  case 27: /* $@4: %empty  */
-#line 118 "parser.y"
-                 { add('K'); }
-#line 1522 "y.tab.c"
-    break;
-
-  case 28: /* statement: PRINTF $@4 '(' STR ')'  */
-#line 118 "parser.y"
-                                                            { (yyval.node_obj).nd = makenode(NULL, NULL, "printf"); }
-#line 1528 "y.tab.c"
-    break;
-
-  case 29: /* $@5: %empty  */
-#line 119 "parser.y"
-                { add('K'); }
-#line 1534 "y.tab.c"
-    break;
-
-  case 30: /* statement: SCANF $@5 '(' STR ',' '&' ID ')'  */
-#line 119 "parser.y"
-                                                            { (yyval.node_obj).nd = makenode(NULL, NULL, "scanf"); }
-#line 1540 "y.tab.c"
-    break;
-
-  case 31: /* $@6: %empty  */
-#line 122 "parser.y"
-           { add('K'); }
-#line 1546 "y.tab.c"
-    break;
-
-  case 32: /* else: ELSE $@6 '{' body '}'  */
-#line 122 "parser.y"
-                                                            { (yyval.node_obj).nd = makenode(NULL, (yyvsp[-1].node_obj).nd, (yyvsp[-4].node_obj).name);}
-#line 1552 "y.tab.c"
-    break;
-
-  case 33: /* else: %empty  */
-#line 123 "parser.y"
-                                                            { (yyval.node_obj).nd = NULL; }
-#line 1558 "y.tab.c"
-    break;
-
-  case 40: /* init: '=' value  */
-#line 134 "parser.y"
-                                                            { (yyval.node_obj2).nd = (yyvsp[0].node_obj2).nd; }
-#line 1564 "y.tab.c"
-    break;
-
-  case 41: /* init: %empty  */
-#line 135 "parser.y"
-                                                            { (yyval.node_obj2).nd = makenode(NULL, NULL, "NULL"); }
-#line 1570 "y.tab.c"
-    break;
-
-  case 42: /* expression: expression arithmetic expression  */
-#line 138 "parser.y"
-                                                            { (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj2).nd, (yyvsp[0].node_obj2).nd, (yyvsp[-1].node_obj).name); }
-#line 1576 "y.tab.c"
-    break;
-
-  case 43: /* expression: value  */
-#line 139 "parser.y"
-                                                            { (yyval.node_obj2).nd = (yyvsp[0].node_obj2).nd; }
+  case 24: /* statement: ID $@4 '=' expression  */
+#line 145 "parser.y"
+                                                            { (yyvsp[-3].node_obj).nd = makenode(NULL, NULL, (yyvsp[-3].node_obj).name);
+                                                            char *id_type = get_type((yyvsp[-3].node_obj).name);  
+                                                            if(strcmp(id_type, (yyvsp[0].node_obj2).type)) {  
+                                                                if(!strcmp(id_type, "int")) {   
+                                                                    //declaration is int but intialization is float
+                                                                    if(!strcmp((yyvsp[0].node_obj2).type, "float")) {    
+                                                                        struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "floattoint");
+                                                                        (yyval.node_obj).nd = makenode((yyvsp[-3].node_obj).nd, temp, "=");    
+                                                                    }
+                                                                    //declaration is int but intialization is char  
+                                                                    else {    
+                                                                        struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartoint");
+                                                                        (yyval.node_obj).nd = makenode((yyvsp[-3].node_obj).nd, temp, "=");    
+                                                                    }     
+                                                                }  
+                                                                else if(!strcmp(id_type, "float")) {   
+                                                                    if(!strcmp((yyvsp[0].node_obj2).type, "int")) {    
+                                                                        struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "inttofloat");
+                                                                        (yyval.node_obj).nd = makenode((yyvsp[-3].node_obj).nd, temp, "=");    
+                                                                    }   
+                                                                    else {    
+                                                                        struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartofloat");
+                                                                        (yyval.node_obj).nd = makenode((yyvsp[-3].node_obj).nd, temp, "=");    
+                                                                    }     
+                                                                }  
+                                                                else {   
+                                                                    if(!strcmp((yyvsp[0].node_obj2).type, "int")) {    
+                                                                        struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "inttochar");
+                                                                        (yyval.node_obj).nd = makenode((yyvsp[-3].node_obj).nd, temp, "=");    
+                                                                    }   
+                                                                    else {    
+                                                                        struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "floattochar");
+                                                                        (yyval.node_obj).nd = makenode((yyvsp[-3].node_obj).nd, temp, "=");    
+                                                                    }
+                                                                } 
+                                                            } 
+                                                            else {  
+                                                                (yyval.node_obj).nd = makenode((yyvsp[-3].node_obj).nd, (yyvsp[0].node_obj2).nd, "=");  
+                                                            }}
 #line 1582 "y.tab.c"
     break;
 
-  case 48: /* value: NUM  */
-#line 148 "parser.y"
-                                                            {(yyval.node_obj2).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name);}
-#line 1588 "y.tab.c"
+  case 25: /* statement: ID relop expression  */
+#line 184 "parser.y"
+                                                            { (yyvsp[-2].node_obj).nd = makenode(NULL, NULL, (yyvsp[-2].node_obj).name); 
+                                                            (yyval.node_obj).nd = makenode((yyvsp[-2].node_obj).nd, (yyvsp[0].node_obj2).nd, (yyvsp[-1].node_obj).name); }
+#line 1589 "y.tab.c"
     break;
 
-  case 49: /* value: FLOAT_NUM  */
-#line 149 "parser.y"
-                                                            {(yyval.node_obj2).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name);}
-#line 1594 "y.tab.c"
+  case 26: /* statement: ID UNARY  */
+#line 186 "parser.y"
+                                                            { (yyvsp[-1].node_obj).nd = makenode(NULL, NULL, (yyvsp[-1].node_obj).name); 
+                                                            (yyvsp[0].node_obj).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name); 
+                                                            (yyval.node_obj).nd = makenode((yyvsp[-1].node_obj).nd, (yyvsp[0].node_obj).nd, "ITERATOR");}
+#line 1597 "y.tab.c"
     break;
 
-  case 50: /* value: CHARACTER  */
-#line 150 "parser.y"
-                                                            {(yyval.node_obj2).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name);}
-#line 1600 "y.tab.c"
+  case 27: /* statement: UNARY ID  */
+#line 189 "parser.y"
+                                                            { (yyvsp[-1].node_obj).nd = makenode(NULL, NULL, (yyvsp[-1].node_obj).name); 
+                                                            (yyvsp[0].node_obj).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name); 
+                                                            (yyval.node_obj).nd = makenode((yyvsp[-1].node_obj).nd, (yyvsp[0].node_obj).nd, "ITERATOR"); }
+#line 1605 "y.tab.c"
     break;
 
-  case 51: /* value: ID  */
-#line 151 "parser.y"
-                                                            {(yyval.node_obj2).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name);}
-#line 1606 "y.tab.c"
+  case 28: /* $@5: %empty  */
+#line 192 "parser.y"
+                 { add('K'); }
+#line 1611 "y.tab.c"
     break;
 
-  case 52: /* $@7: %empty  */
-#line 154 "parser.y"
+  case 29: /* statement: PRINTF $@5 '(' STR ')'  */
+#line 192 "parser.y"
+                                                            { (yyval.node_obj).nd = makenode(NULL, NULL, "printf"); }
+#line 1617 "y.tab.c"
+    break;
+
+  case 30: /* $@6: %empty  */
+#line 193 "parser.y"
+                { add('K'); }
+#line 1623 "y.tab.c"
+    break;
+
+  case 31: /* statement: SCANF $@6 '(' STR ',' '&' ID ')'  */
+#line 193 "parser.y"
+                                                            { (yyval.node_obj).nd = makenode(NULL, NULL, "scanf"); }
+#line 1629 "y.tab.c"
+    break;
+
+  case 32: /* $@7: %empty  */
+#line 196 "parser.y"
+           { add('K'); }
+#line 1635 "y.tab.c"
+    break;
+
+  case 33: /* else: ELSE $@7 '{' body '}'  */
+#line 196 "parser.y"
+                                                            { (yyval.node_obj).nd = makenode(NULL, (yyvsp[-1].node_obj).nd, (yyvsp[-4].node_obj).name);}
+#line 1641 "y.tab.c"
+    break;
+
+  case 34: /* else: %empty  */
+#line 197 "parser.y"
+                                                            { (yyval.node_obj).nd = NULL; }
+#line 1647 "y.tab.c"
+    break;
+
+  case 41: /* $@8: %empty  */
+#line 208 "parser.y"
+             { add('V'); }
+#line 1653 "y.tab.c"
+    break;
+
+  case 42: /* init: ',' ID $@8 init  */
+#line 208 "parser.y"
+                                                            {sprintf((yyval.node_obj2).type, "null"); 
+                                                            (yyval.node_obj2).nd = makenode(NULL, NULL, "NULL"); 
+                                                            strcpy((yyval.node_obj2).name, "NULL");
+                                                            (yyvsp[-2].node_obj).nd = makenode(NULL, NULL, (yyvsp[-2].node_obj).name);
+                                                            int t = check_types(type, (yyvsp[0].node_obj2).type);
+                                                            if(t>0) {   
+                                                                if(t == 1) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "floattoint");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 2) {
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "inttofloat");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 3) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartoint");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 4) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "inttochar");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 5) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartofloat");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else {   
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "floattochar");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }
+                                                            }
+                                                            else {   
+                                                                (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, (yyvsp[0].node_obj2).nd, "declaration");  
+                                                            }}
+#line 1692 "y.tab.c"
+    break;
+
+  case 43: /* $@9: %empty  */
+#line 242 "parser.y"
+                       { add('V'); }
+#line 1698 "y.tab.c"
+    break;
+
+  case 44: /* init: '=' value ',' ID $@9 init  */
+#line 242 "parser.y"
+                                                            {(yyval.node_obj2).nd = (yyvsp[-4].node_obj2).nd; 
+                                                            sprintf((yyval.node_obj2).type, (yyvsp[-4].node_obj2).type); 
+                                                            strcpy((yyval.node_obj2).name, (yyvsp[-4].node_obj2).name);
+                                                            (yyvsp[-2].node_obj).nd = makenode(NULL, NULL, (yyvsp[-2].node_obj).name);
+                                                            int t = check_types(type, (yyvsp[0].node_obj2).type);
+                                                            if(t>0) {   
+                                                                if(t == 1) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "floattoint");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 2) {
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "inttofloat");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 3) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartoint");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 4) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "inttochar");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else if(t == 5) {    
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartofloat");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }   
+                                                                else {   
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "floattochar");
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, temp, "declaration");   
+                                                                }
+                                                            }
+                                                            else {   
+                                                                (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj).nd, (yyvsp[0].node_obj2).nd, "declaration");  
+                                                            }}
+#line 1737 "y.tab.c"
+    break;
+
+  case 45: /* init: '=' value  */
+#line 276 "parser.y"
+                                                            { (yyval.node_obj2).nd = (yyvsp[0].node_obj2).nd; 
+                                                            sprintf((yyval.node_obj2).type, (yyvsp[0].node_obj2).type); 
+                                                            strcpy((yyval.node_obj2).name, (yyvsp[0].node_obj2).name); }
+#line 1745 "y.tab.c"
+    break;
+
+  case 46: /* init: %empty  */
+#line 279 "parser.y"
+                                                            { sprintf((yyval.node_obj2).type, "null"); 
+                                                            (yyval.node_obj2).nd = makenode(NULL, NULL, "NULL"); 
+                                                            strcpy((yyval.node_obj2).name, "NULL"); }
+#line 1753 "y.tab.c"
+    break;
+
+  case 47: /* expression: expression arithmetic expression  */
+#line 284 "parser.y"
+                                                            { if(!strcmp((yyvsp[-2].node_obj2).type, (yyvsp[0].node_obj2).type)) {  
+                                                                sprintf((yyval.node_obj2).type, (yyvsp[-2].node_obj2).type);  
+                                                                (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj2).nd, (yyvsp[0].node_obj2).nd, (yyvsp[-1].node_obj).name);  
+                                                            }
+                                                            //Expr1 and expr2 are different types 
+                                                            else {  
+                                                                if(!strcmp((yyvsp[-2].node_obj2).type, "int") && !strcmp((yyvsp[0].node_obj2).type, "float")) {
+                                                                    struct node *temp = makenode(NULL, (yyvsp[-2].node_obj2).nd, "inttofloat");
+                                                                    sprintf((yyval.node_obj2).type, (yyvsp[0].node_obj2).type);   
+                                                                    (yyval.node_obj2).nd = makenode(temp, (yyvsp[0].node_obj2).nd, (yyvsp[-1].node_obj).name);  
+                                                                }  
+                                                                else if(!strcmp((yyvsp[-2].node_obj2).type, "float") && !strcmp((yyvsp[0].node_obj2).type, "int")) {   
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "inttofloat");
+                                                                    sprintf((yyval.node_obj2).type, (yyvsp[-2].node_obj2).type);   
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj2).nd, temp, (yyvsp[-1].node_obj).name);  
+                                                                }  
+                                                                else if(!strcmp((yyvsp[-2].node_obj2).type, "int") && !strcmp((yyvsp[0].node_obj2).type, "char")){   
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartoint");
+                                                                    sprintf((yyval.node_obj2).type, (yyvsp[-2].node_obj2).type);   
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj2).nd, temp, (yyvsp[-1].node_obj).name);  
+                                                                }  
+                                                                else if(!strcmp((yyvsp[-2].node_obj2).type, "char") && !strcmp((yyvsp[0].node_obj2).type, "int")) {   
+                                                                    struct node *temp = makenode(NULL, (yyvsp[-2].node_obj2).nd, "chartoint");
+                                                                    sprintf((yyval.node_obj2).type, (yyvsp[0].node_obj2).type);   
+                                                                    (yyval.node_obj2).nd = makenode(temp, (yyvsp[0].node_obj2).nd, (yyvsp[-1].node_obj).name);  
+                                                                }  
+                                                                else if(!strcmp((yyvsp[-2].node_obj2).type, "float") && !strcmp((yyvsp[0].node_obj2).type, "char")) {   
+                                                                    struct node *temp = makenode(NULL, (yyvsp[0].node_obj2).nd, "chartofloat");
+                                                                    sprintf((yyval.node_obj2).type, (yyvsp[-2].node_obj2).type);   
+                                                                    (yyval.node_obj2).nd = makenode((yyvsp[-2].node_obj2).nd, temp, (yyvsp[-1].node_obj).name);  
+                                                                }  
+                                                                else {   
+                                                                    struct node *temp = makenode(NULL, (yyvsp[-2].node_obj2).nd, "chartofloat");
+                                                                    sprintf((yyval.node_obj2).type, (yyvsp[0].node_obj2).type);   
+                                                                    (yyval.node_obj2).nd = makenode(temp, (yyvsp[0].node_obj2).nd, (yyvsp[-1].node_obj).name);  
+                                                                } 
+                                                            }}
+#line 1795 "y.tab.c"
+    break;
+
+  case 48: /* expression: value  */
+#line 321 "parser.y"
+                                                            { strcpy((yyval.node_obj2).name, (yyvsp[0].node_obj2).name); 
+                                                            sprintf((yyval.node_obj2).type, (yyvsp[0].node_obj2).type); 
+                                                            (yyval.node_obj2).nd = (yyvsp[0].node_obj2).nd;}
+#line 1803 "y.tab.c"
+    break;
+
+  case 53: /* value: NUM  */
+#line 332 "parser.y"
+                                                            {strcpy((yyval.node_obj2).name, (yyvsp[0].node_obj).name); sprintf((yyval.node_obj2).type, "int");
+                                                            (yyval.node_obj2).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name);}
+#line 1810 "y.tab.c"
+    break;
+
+  case 54: /* value: FLOAT_NUM  */
+#line 334 "parser.y"
+                                                            {(yyval.node_obj2).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name);
+                                                            strcpy((yyval.node_obj2).name, (yyvsp[0].node_obj).name); sprintf((yyval.node_obj2).type, "float");}
+#line 1817 "y.tab.c"
+    break;
+
+  case 55: /* value: CHARACTER  */
+#line 336 "parser.y"
+                                                            {(yyval.node_obj2).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name);
+                                                            strcpy((yyval.node_obj2).name, (yyvsp[0].node_obj).name); sprintf((yyval.node_obj2).type, "char");}
+#line 1824 "y.tab.c"
+    break;
+
+  case 56: /* value: ID  */
+#line 338 "parser.y"
+                                                            {strcpy((yyval.node_obj2).name, (yyvsp[0].node_obj).name); char *id_type = get_type((yyvsp[0].node_obj).name); 
+                                                            sprintf((yyval.node_obj2).type, id_type); 
+                                                            check_declaration((yyvsp[0].node_obj).name); 
+                                                            (yyval.node_obj2).nd = makenode(NULL, NULL, (yyvsp[0].node_obj).name);}
+#line 1833 "y.tab.c"
+    break;
+
+  case 57: /* $@10: %empty  */
+#line 344 "parser.y"
                { add('K'); }
-#line 1612 "y.tab.c"
+#line 1839 "y.tab.c"
     break;
 
-  case 53: /* return: RETURN $@7 NUM ';'  */
-#line 154 "parser.y"
+  case 58: /* return: RETURN $@10 NUM ';'  */
+#line 344 "parser.y"
                                                             {(yyvsp[-3].node_obj).nd = makenode(NULL, NULL, "return"); 
                                                             (yyval.node_obj).nd = makenode((yyvsp[-3].node_obj).nd, (yyvsp[-1].node_obj).nd, "RETURN"); }
-#line 1619 "y.tab.c"
+#line 1846 "y.tab.c"
     break;
 
-  case 54: /* return: %empty  */
-#line 156 "parser.y"
+  case 59: /* return: %empty  */
+#line 346 "parser.y"
                                                             { (yyval.node_obj).nd = NULL; }
-#line 1625 "y.tab.c"
+#line 1852 "y.tab.c"
     break;
 
 
-#line 1629 "y.tab.c"
+#line 1856 "y.tab.c"
 
       default: break;
     }
@@ -1818,13 +2045,14 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 159 "parser.y"
+#line 349 "parser.y"
 
 int main() {
     yyin=fopen("input.c","r");
     printf("\n");
     yyparse();
-   printf("Syntax Analyser: Parsing Successful\n\nSymbol Table:\n");
+    printf("__________________________________________________________________________________________________________________________\n");
+    printf("Syntax Analysis:\nParsing Successful\n\nSymbol Table:\n");
 
     printf("\nSYMBOL\t\tTYPE\t\tDATATYPE\tSIZE\t\tOFFSET\t\tSCOPE\n");
 	printf("______________________________________________________________________________________\n\n");
@@ -1838,7 +2066,17 @@ int main() {
 	}
     printf("\n\nSyntax Tree:\n\n");
     printLevelOrder(head);
-	printf("\n\n");
+    printf("\n__________________________________________________________________________________________________________________________\n");
+	printf("Semantic Analysis:\n");
+    	if(sem_errors>0) {
+		    printf("Semantic analysis completed with %d errors:\n", sem_errors);
+		for(int i=0; i<sem_errors; i++){
+			printf("  %s", errors[i]);
+		}
+	} else {
+		printf("Semantic analysis completed with no errors");
+	}
+    printf("\n\n");
     return 0;
 }
 void yyerror(const char* msg) {
@@ -1851,6 +2089,15 @@ void insert_type() {
 }
 
 void add(char c) {
+  if(c == 'V') {  
+    for(int i=0; i<10; i++) {   
+        if(!strcmp(reserved[i], strdup(yytext))) {
+            sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" is a keyword.\n", countn+1, yytext);
+            sem_errors++;    
+            return;
+        }  
+    } 
+  }
   exists=lookup(yytext);
   if(!exists){
         if(c == 'H') {
@@ -1909,7 +2156,7 @@ void add(char c) {
         else if(c == 'F') {
             symbol_table[ind].id_name=strdup(yytext);
             symbol_table[ind].line_no=countn;
-            symbol_table[ind].data_type=strdup("-");     
+            symbol_table[ind].data_type=strdup(type);    
             symbol_table[ind].type=strdup("Func");
             symbol_table[ind].size=1;
             symbol_table[ind].off=offset;
@@ -1918,14 +2165,17 @@ void add(char c) {
             ind++;  
         }
     }
+    else if(c == 'V' && exists) {
+        sprintf(errors[sem_errors], "Line %d: Multiple declaration of variable \"%s\" not allowed!\n", countn+1, yytext);  
+        sem_errors++;
+    }
 }
 
 int lookup(char *id) {
 	int i;
 	for(i=ind-1; i>=0; i--) {
 		if(strcmp(symbol_table[i].id_name, id)==0) {
-            printf("Parsing Error: Rentry in Symbol Table - %s\n\n",id);
-			exit(0);
+            return 1;
 		}
 	}
 	return 0;
@@ -1972,4 +2222,35 @@ void printLevelOrder(struct node* root) {
         }
        printf("\n");
     }
+}
+
+void check_declaration(char *c) {    
+    exists = lookup(c);    
+    if(!exists) {        
+        sprintf(errors[sem_errors], "Line %d: Variable \"%s\" has not been declared.\n", countn+1, c);  
+        sem_errors++;    
+    }
+}
+
+int check_types(char *type1, char *type2) { 
+    // declaration with no init 
+    if(!strcmp(type2, "null")) return -1; 
+    // both datatypes are same 
+    if(!strcmp(type1, type2)) return 0; 
+    // both datatypes are different 
+    if(!strcmp(type1, "int") && !strcmp(type2, "float")) return 1;
+    if(!strcmp(type1, "float") && !strcmp(type2, "int")) return 2;
+    if(!strcmp(type1, "int") && !strcmp(type2, "char")) return 3;
+    if(!strcmp(type1, "char") && !strcmp(type2, "int")) return 4;
+    if(!strcmp(type1, "float") && !strcmp(type2, "char")) return 5;
+    if(!strcmp(type1, "char") && !strcmp(type2, "float")) return 6;
+}
+
+char *get_type(char *var) { 
+    for(int i=0; i<ind; i++) {  
+        if(!strcmp(symbol_table[i].id_name, var)) {   
+            return symbol_table[i].data_type;  
+        }
+    }
+    return NULL;
 }
