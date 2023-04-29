@@ -32,47 +32,54 @@ vector<Quadruple> icg_to_quadruples(vector<vector<string> > icg) {
         vector<string> code = icg[i];
 
         // Check the operator and generate the appropriate quadruple
-        if (code[0] == "+") {
+        if (code[3] == "+") {
             // Addition operation
             string temp_var = "t" + to_string(temp_var_count["t"]);
             temp_var_count["t"]++;
-            quadruples.push_back(Quadruple("+", code[1], code[2], temp_var));
-            quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
-        } else if (code[0] == "-") {
+            quadruples.push_back(Quadruple("+", code[2], code[4], code[0]));
+            // quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
+        } else if (code[3] == "-") {
             // Subtraction operation
             string temp_var = "t" + to_string(temp_var_count["t"]);
             temp_var_count["t"]++;
 
-            quadruples.push_back(Quadruple("-", code[1], code[2], temp_var));
-            quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
-        } else if (code[0] == "*") {
+            quadruples.push_back(Quadruple("-", code[2], code[4], code[0]));
+            // quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
+        } else if (code[3] == "*") {
             // Multiplication operation
             string temp_var = "t" + to_string(temp_var_count["t"]);
             temp_var_count["t"]++;
 
-            quadruples.push_back(Quadruple("*", code[1], code[2], temp_var));
-            quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
-        } else if (code[0] == "/") {
+            quadruples.push_back(Quadruple("*", code[2], code[4], code[0]));
+            // quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
+        } else if (code[3] == "/") {
             // Division operation
             string temp_var = "t" + to_string(temp_var_count["t"]);
             temp_var_count["t"]++;
 
-            quadruples.push_back(Quadruple("/", code[1], code[2], temp_var));
-            quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
-        } else if (code[0] == "=") {
+            quadruples.push_back(Quadruple("/", code[2], code[4], code[0]));
+            // quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
+        } else if (code[1] == "=") {
             // Assignment operation
-            quadruples.push_back(Quadruple("=", code[1], "", code[3]));
+            quadruples.push_back(Quadruple("=", code[2], "", code[0]));
         } else if (code[0] == "goto") {
             // Goto statement
             quadruples.push_back(Quadruple("GOTO", "", "", code[1]));
         } else if (code[0] == "if") {
             // If statement
             if(code[1] == "NOT"){
-                
+                if(code[2] == "(1)"){
+                    quadruples.push_back(Quadruple("NOT", code[2], "", code[5]));
+                }
             }else{
-                quadruples.push_back(Quadruple("IF", code[1], code[2], code[4]));
+                char x = code[1][1];
+                char y = code[3][0];
+                string a = "";
+                a+= x;
+                string b = "";
+                b+= y;
+                quadruples.push_back(Quadruple(code[2], a, b, code[5]));
             }
-            quadruples.push_back(Quadruple("IF", code[1], code[2], code[4]));
         } else if (code.size() == 1) {
             // Label statement
             quadruples.push_back(Quadruple("label", "", "", code[0].substr(0, code[0].size() - 1)));
@@ -108,8 +115,11 @@ int main() {
         }
         ICG.push_back(vec);
     }
+    for(auto it : ICG){
+
+    }
     vector<Quadruple> q = icg_to_quadruples(ICG);
     for(auto it : q){
-        cout << it.opcode << it.arg1 << it.arg2 << it.result << endl;
+        cout << it.opcode << " " << it.arg1 << " " << it.arg2 << " "<< it.result << endl;
     }
 }
