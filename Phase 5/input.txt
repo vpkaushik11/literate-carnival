@@ -1,0 +1,25 @@
+b = NULL
+c = NULL
+a = NULL
+x = 10         // 
+d = a           //
+L0 :
+if !(1) goto L1
+if (a<b) goto L2
+goto L3
+L2 :
+t0 = a + 1
+a = t0
+L4 :
+if !(1) goto L5
+t1 = c + 1
+c = t1
+goto L4
+L5 :
+goto L1
+L3 :
+p =  k + 2 //
+t2 = b + 1
+b = t2
+goto L0
+L1 :
