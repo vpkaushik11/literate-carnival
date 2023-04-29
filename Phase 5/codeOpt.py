@@ -192,28 +192,6 @@ def elimDeadCode(lines):
     
     return newlines
 
-def liveVarAnalysis(lines):
-    k = 1
-    livevariables = []
-    varloc = dict()
-    for i in lines:
-        i = i.strip("\n")
-        if(len(i.split()) == 5 or len(i.split()) == 3):
-            lhs = i.split()[0]
-            out = exists_rhs(lines, lhs, k-1)
-            if(out != -1):
-                if(lhs not in livevariables):
-                    livevariables.append(lhs)
-                    varloc[out] = lhs
-            if((k-1) in varloc.keys()):
-                livevariables.remove(varloc[k-1])
-            
-        print("Live Variables at Line ", k, " Are : ", livevariables)
-        time.sleep(0.02)
-        k = k + 1
-    time.sleep(0.05)
-    print("__________________________")
-    print()
                 
 fin = open("input.txt", "r")
 fout = open("Optimized_ICG.txt", "w")
@@ -223,13 +201,6 @@ lines = fin.readlines()
 
 for i in lines:
     print(i)
-
-print()
-print("______________________")
-print()
-print("Live Variable Analysis")
-print("______________________")
-liveVarAnalysis(lines)
 
 print()
 print("Dead Code Elimination")
