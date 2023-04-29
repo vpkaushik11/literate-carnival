@@ -2,6 +2,6 @@
 #include<string.h>
 
 int main() {
-    int b,c=3;
+    int b=5.3;
     return 1;
 }
