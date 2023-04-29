@@ -35,10 +35,10 @@
 	int ic_idx=0;
 	int temp_var=0;
 	int label=0;
-	int is_while =0;
+	int is_for=0;
 	char buff[100];
 	char errors[10][100];
-	char reserved[11][10] = {"int", "float", "char", "void", "if", "else", "for", "main", "return", "include", "while"};
+	char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "for", "main", "return", "include"};
 	char icg[50][100];
 
 	struct node { 
@@ -68,7 +68,7 @@
 		} nd_obj3;
 	} 
 %token VOID 
-%token <nd_obj> CHARACTER PRINTFF SCANFF INT FLOAT CHAR WHILE IF ELSE TRUE FALSE NUM FLOAT_NUM ID LE GE EQ NE GT LT AND OR STR ADD MUL DIV SUB UNARY INCLUDE RETURN 
+%token <nd_obj> CHARACTER PRINTFF SCANFF INT FLOAT CHAR FOR IF ELSE TRUE FALSE NUMBER FLOAT_NUM ID LE GE EQ NE GT LT AND OR STR ADD MULTIPLY DIVIDE SUBTRACT UNARY INCLUDE RETURN 
 %type <nd_obj> headers main body return datatype statement arithmetic relop program else
 %type <nd_obj2> init value expression
 %type <nd_obj3> condition
@@ -93,27 +93,19 @@ datatype: INT { insert_type(); }
 | VOID { insert_type(); }
 ;
 
-body: WHILE { add('K'); is_while = 1; } '(' condition ')' '{' body '}'{ 
-    // condition = 4, body is 7
-    // FOR { add('K'); is_for = 1; } '(' statement ';' condition ';' statement ')' '{' body '}' { 
-    // body is 11, st1 is 4,  st2 is 8, cond is 6
-	// struct node *temp = mknode($6.nd, $8.nd, "CONDITION"); 
-	// struct node *temp2 = mknode($4.nd, temp, "CONDITION"); 
-    struct node *whi = ($4.nd, $7.nd, $1.name)
-	// $$.nd = mknode(temp2, $11.nd, $1.name); 
-	$$.nd = mknode(whi, $7.nd, "WHILE"); 
-	
-    sprintf(icg[ic_idx++], buff);
-	sprintf(icg[ic_idx++], "JUMP to %s\n", $4.if_body);
-	sprintf(icg[ic_idx++], "\nLABEL %s:\n", $4.else_body);
+body: FOR { add('K'); is_for = 1; } '(' statement ';' condition ';' statement ')' '{' body '}' { 
+	struct node *temp = mknode($6.nd, $8.nd, "CONDITION"); 
+	struct node *temp2 = mknode($4.nd, temp, "CONDITION"); 
+	$$.nd = mknode(temp2, $11.nd, $1.name); 
+	sprintf(icg[ic_idx++], buff);
+	sprintf(icg[ic_idx++], "JUMP to %s\n", $6.if_body);
+	sprintf(icg[ic_idx++], "\nLABEL %s:\n", $6.else_body);
 }
-| IF { add('K'); is_while = 0; } '(' condition ')' { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $4.if_body); } '{' body '}' 
-    { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $4.else_body); } 
-    else { 
-	    struct node *iff = mknode($4.nd, $8.nd, $1.name); 
-	    $$.nd = mknode(iff, $11.nd, "if-else"); 
-	    sprintf(icg[ic_idx++], "GOTO next\n");
-    }
+| IF { add('K'); is_for = 0; } '(' condition ')' { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $4.if_body); } '{' body '}' { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $4.else_body); } else { 
+	struct node *iff = mknode($4.nd, $8.nd, $1.name); 
+	$$.nd = mknode(iff, $11.nd, "if-else"); 
+	sprintf(icg[ic_idx++], "GOTO next\n");
+}
 | statement ';' { $$.nd = $1.nd; }
 | body body { $$.nd = mknode($1.nd, $2.nd, "statements"); }
 | PRINTFF { add('K'); } '(' STR ')' ';' { $$.nd = mknode(NULL, NULL, "printf"); }
@@ -126,7 +118,7 @@ else: ELSE { add('K'); } '{' body '}' { $$.nd = mknode(NULL, $4.nd, $1.name); }
 
 condition: value relop value { 
 	$$.nd = mknode($1.nd, $3.nd, $2.name); 
-	if(is_while) {
+	if(is_for) {
 		sprintf($$.if_body, "L%d", label++);
 		sprintf(icg[ic_idx++], "\nLABEL %s:\n", $$.if_body);
 		sprintf(icg[ic_idx++], "\nif NOT (%s %s %s) GOTO L%d\n", $1.name, $2.name, $3.name, label);
@@ -294,9 +286,9 @@ expression: expression arithmetic expression {
 ;
 
 arithmetic: ADD 
-| SUB 
-| MUL
-| DIV
+| SUBTRACT 
+| MULTIPLY
+| DIVIDE
 ;
 
 relop: LT
@@ -307,7 +299,7 @@ relop: LT
 | NE
 ;
 
-value: NUM { strcpy($$.name, $1.name); sprintf($$.type, "int"); add('C'); $$.nd = mknode(NULL, NULL, $1.name); }
+value: NUMBER { strcpy($$.name, $1.name); sprintf($$.type, "int"); add('C'); $$.nd = mknode(NULL, NULL, $1.name); }
 | FLOAT_NUM { strcpy($$.name, $1.name); sprintf($$.type, "float"); add('C'); $$.nd = mknode(NULL, NULL, $1.name); }
 | CHARACTER { strcpy($$.name, $1.name); sprintf($$.type, "char"); add('C'); $$.nd = mknode(NULL, NULL, $1.name); }
 | ID { strcpy($$.name, $1.name); char *id_type = get_type($1.name); sprintf($$.type, id_type); check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name); }
@@ -323,7 +315,7 @@ int main() {
     yyparse();
     printf("\n\n");
 	printf("\t\t\t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
-	printf("\nSYMBOL   DATATYPE   TYPE   LINE NUM \n");
+	printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
 	printf("_______________________________________\n\n");
 	int i=0;
 	for(i=0; i<count; i++) {

@@ -538,8 +538,8 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "lexical2.l"
-#line 2 "lexical2.l"
+#line 1 "lexical.l"
+#line 2 "lexical.l"
     #include "y.tab.h"
     int countn=0;
 #line 545 "lex.yy.c"
@@ -763,7 +763,7 @@ YY_DECL
 		}
 
 	{
-#line 11 "lexical2.l"
+#line 12 "lexical.l"
 
 
 #line 769 "lex.yy.c"
@@ -836,189 +836,189 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 13 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return PRINTFF; }
+#line 14 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return PRINTF; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 14 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return SCANFF; }
+#line 15 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return SCANF; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 15 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return INT; }
+#line 16 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return INT; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 16 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return FLOAT; }
+#line 17 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return FLOAT; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 17 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return CHAR; }
+#line 18 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return CHAR; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 18 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return VOID; }
+#line 19 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return VOID; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 19 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return RETURN; }
+#line 20 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return RETURN; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 20 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return WHILE; }
+#line 21 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return WHILE; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 21 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return IF; }
+#line 22 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return IF; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 22 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return ELSE; }
+#line 23 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return ELSE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 23 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return INCLUDE; }
+#line 24 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return INCLUDE; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 24 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return TRUE; }
+#line 25 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return TRUE; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 25 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return FALSE; }
+#line 26 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return FALSE; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 26 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return NUM; }
+#line 27 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return NUM; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 27 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return FLOAT_NUM; }
+#line 28 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return FLOAT_NUM; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 28 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return ID; }
+#line 29 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return ID; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 29 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return UNARY; }
+#line 30 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return UNARY; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 30 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return LE; }
+#line 31 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return LE; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 31 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return GE; }
+#line 32 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return GE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 32 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return EQ; }
+#line 33 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return EQ; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 33 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return NE; }
+#line 34 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return NE; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 34 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return GT; }
+#line 35 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return GT; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 35 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return LT; }
+#line 36 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return LT; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 36 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return AND; }
+#line 37 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return AND; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 37 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return OR; }
+#line 38 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return OR; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 38 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return ADD; }
+#line 39 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return ADD; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 39 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return SUB; }
+#line 40 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return SUB; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 40 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return DIV; }
+#line 41 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return DIV; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 41 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return MUL; }
+#line 42 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return MUL; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 42 "lexical2.l"
+#line 43 "lexical.l"
 { ; }
 	YY_BREAK
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 43 "lexical2.l"
+#line 44 "lexical.l"
 { ; } 
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 44 "lexical2.l"
+#line 45 "lexical.l"
 { ; }
 	YY_BREAK
 case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
-#line 45 "lexical2.l"
+#line 46 "lexical.l"
 { countn++; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 46 "lexical2.l"
+#line 47 "lexical.l"
 { return *yytext; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 47 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return STR; }
+#line 48 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return STR; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 48 "lexical2.l"
-{ strcpy(yylval.nd_obj.name,(yytext)); return CHARACTER; }
+#line 49 "lexical.l"
+{ strcpy(yylval.node_obj.name,(yytext));return CHAR; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 50 "lexical2.l"
+#line 51 "lexical.l"
 ECHO;
 	YY_BREAK
 #line 1024 "lex.yy.c"
@@ -2040,7 +2040,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 50 "lexical2.l"
+#line 51 "lexical.l"
 
 
 int yywrap() {

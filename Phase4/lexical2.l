@@ -17,13 +17,13 @@ unary "++"|"--"
 "char"                      { strcpy(yylval.nd_obj.name,(yytext)); return CHAR; }
 "void"                      { strcpy(yylval.nd_obj.name,(yytext)); return VOID; }
 "return"                    { strcpy(yylval.nd_obj.name,(yytext)); return RETURN; }
-"while"	                    { strcpy(yylval.nd_obj.name,(yytext)); return WHILE; }
+"for"	                    { strcpy(yylval.nd_obj.name,(yytext)); return FOR; }
 "if"	                    { strcpy(yylval.nd_obj.name,(yytext)); return IF; }
 "else"	                    { strcpy(yylval.nd_obj.name,(yytext)); return ELSE; }
 ^"#include"[ ]*<.+\.h>      { strcpy(yylval.nd_obj.name,(yytext)); return INCLUDE; }
 "true"                      { strcpy(yylval.nd_obj.name,(yytext)); return TRUE; }
 "false"                     { strcpy(yylval.nd_obj.name,(yytext)); return FALSE; }
-[-]?{digit}+                { strcpy(yylval.nd_obj.name,(yytext)); return NUM; }
+[-]?{digit}+                { strcpy(yylval.nd_obj.name,(yytext)); return NUMBER; }
 [-]?{digit}+\.{digit}{1,6}  { strcpy(yylval.nd_obj.name,(yytext)); return FLOAT_NUM; }
 {alpha}({alpha}|{digit})*   { strcpy(yylval.nd_obj.name,(yytext)); return ID; }
 {unary}                     { strcpy(yylval.nd_obj.name,(yytext)); return UNARY; }
@@ -36,9 +36,9 @@ unary "++"|"--"
 "&&"	                    { strcpy(yylval.nd_obj.name,(yytext)); return AND; }
 "||"	                    { strcpy(yylval.nd_obj.name,(yytext)); return OR; }
 "+"                         { strcpy(yylval.nd_obj.name,(yytext)); return ADD; }
-"-"                         { strcpy(yylval.nd_obj.name,(yytext)); return SUB; }
-"/"                         { strcpy(yylval.nd_obj.name,(yytext)); return DIV; }
-"*"                         { strcpy(yylval.nd_obj.name,(yytext)); return MUL; }
+"-"                         { strcpy(yylval.nd_obj.name,(yytext)); return SUBTRACT; }
+"/"                         { strcpy(yylval.nd_obj.name,(yytext)); return DIVIDE; }
+"*"                         { strcpy(yylval.nd_obj.name,(yytext)); return MULTIPLY; }
 \/\/.*                      { ; }
 \/\*(.*\n)*.*\*\/           { ; } 
 [ \t]*                      { ; }
