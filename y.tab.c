@@ -1496,7 +1496,7 @@ yyreduce:
                                                                 sprintf((yyval.node_obj3).else_body, "L%d", label++); 
                                                             } 
                                                             else {  
-                                                                sprintf(icg[icgind++], "\nif (%s %s %s) GOTO L%d else GOTO L%d\n", (yyvsp[-2].node_obj2).name, (yyvsp[-1].node_obj).name, (yyvsp[0].node_obj2).name, label, label+1);
+                                                                sprintf(icg[icgind++], "\nif (%s %s %s) GOTOvds L%d else GOTO L%d\n", (yyvsp[-2].node_obj2).name, (yyvsp[-1].node_obj).name, (yyvsp[0].node_obj2).name, label, label+1);
                                                                 sprintf((yyval.node_obj3).if_body, "L%d", label++);  
                                                                 sprintf((yyval.node_obj3).else_body, "L%d", label++); 
                                                             }}
@@ -1513,7 +1513,7 @@ yyreduce:
                                                                 sprintf((yyval.node_obj3).else_body, "L%d", label++); 
                                                             } 
                                                             else {  
-                                                                sprintf(icg[icgind++], "\nif (%s) GOTO L%d else GOTO L%d\n", (yyvsp[0].node_obj2).name, label, label+1);
+                                                                sprintf(icg[icgind++], "\nif (%s %s %s) GOTOe4rg L%d else GOTO L%d\n", (yyvsp[0].node_obj2).name, label, label+1);
                                                                 sprintf((yyval.node_obj3).if_body, "L%d", label++);  
                                                                 sprintf((yyval.node_obj3).else_body, "L%d", label++); 
                                                             }}

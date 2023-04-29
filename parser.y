@@ -133,7 +133,7 @@ condition: expression relop expression                      { $$.nd = makenode($
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             } 
                                                             else {  
-                                                                sprintf(icg[icgind++], "\nif (%s) GOTO L%d else GOTO L%d\n", $1.name, $2.name, $3.name, label, label+1);
+                                                                sprintf(icg[icgind++], "\nif (%s) GOTO L%d else GOTO L%d\n", $1.name, label, label+1);
                                                                 sprintf($$.if_body, "L%d", label++);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             }}
