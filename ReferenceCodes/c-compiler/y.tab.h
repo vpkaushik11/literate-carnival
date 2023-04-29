@@ -56,8 +56,8 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     VOID = 258,                    /* VOID  */
     CHARACTER = 259,               /* CHARACTER  */
-    PRINTF = 260,                  /* PRINTF  */
-    SCANF = 261,                   /* SCANF  */
+    PRINTFF = 260,                 /* PRINTFF  */
+    SCANFF = 261,                  /* SCANFF  */
     INT = 262,                     /* INT  */
     FLOAT = 263,                   /* FLOAT  */
     CHAR = 264,                    /* CHAR  */
@@ -66,7 +66,7 @@ extern int yydebug;
     ELSE = 267,                    /* ELSE  */
     TRUE = 268,                    /* TRUE  */
     FALSE = 269,                   /* FALSE  */
-    NUM = 270,                     /* NUM  */
+    NUMBER = 270,                  /* NUMBER  */
     FLOAT_NUM = 271,               /* FLOAT_NUM  */
     ID = 272,                      /* ID  */
     LE = 273,                      /* LE  */
@@ -79,9 +79,9 @@ extern int yydebug;
     OR = 280,                      /* OR  */
     STR = 281,                     /* STR  */
     ADD = 282,                     /* ADD  */
-    MUL = 283,                     /* MUL  */
-    DIV = 284,                     /* DIV  */
-    SUB = 285,                     /* SUB  */
+    MULTIPLY = 283,                /* MULTIPLY  */
+    DIVIDE = 284,                  /* DIVIDE  */
+    SUBTRACT = 285,                /* SUBTRACT  */
     UNARY = 286,                   /* UNARY  */
     INCLUDE = 287,                 /* INCLUDE  */
     RETURN = 288                   /* RETURN  */
@@ -95,8 +95,8 @@ extern int yydebug;
 #define YYUNDEF 257
 #define VOID 258
 #define CHARACTER 259
-#define PRINTF 260
-#define SCANF 261
+#define PRINTFF 260
+#define SCANFF 261
 #define INT 262
 #define FLOAT 263
 #define CHAR 264
@@ -105,7 +105,7 @@ extern int yydebug;
 #define ELSE 267
 #define TRUE 268
 #define FALSE 269
-#define NUM 270
+#define NUMBER 270
 #define FLOAT_NUM 271
 #define ID 272
 #define LE 273
@@ -118,9 +118,9 @@ extern int yydebug;
 #define OR 280
 #define STR 281
 #define ADD 282
-#define MUL 283
-#define DIV 284
-#define SUB 285
+#define MULTIPLY 283
+#define DIVIDE 284
+#define SUBTRACT 285
 #define UNARY 286
 #define INCLUDE 287
 #define RETURN 288
@@ -129,25 +129,27 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 59 "parser.y"
+#line 53 "parser.y"
+ struct var_name { 
+			char name[100]; 
+			struct node* nd;
+		} nd_obj;
 
-    struct var_name {
-        char name[100];
-        struct node* nd;
-    } node_obj;
-    struct var_name2 { 
-		char name[100]; 
-		struct node* nd;
-		char type[10];
-	} node_obj2;
-    struct var_name3 {
-		char name[100];
-		struct node* nd;
-		char if_body[5];
-		char else_body[5];
-	} node_obj3; 
+		struct var_name2 { 
+			char name[100]; 
+			struct node* nd;
+			char type[5];
+		} nd_obj2; 
 
-#line 151 "y.tab.h"
+		struct var_name3 {
+			char name[100];
+			struct node* nd;
+			char if_body[5];
+			char else_body[5];
+		} nd_obj3;
+	
+
+#line 153 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -45,10 +45,15 @@
     char type[10];
     extern int countn;
     int label=0;
-	char buff[100];
     char errors[10][100];
     char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "for", "main", "return", "include"};
     int sem_errors=0;
+
+    int icgind=0;
+    int temp_var=0; 
+    int is_while=0;
+    char buffer[100];
+    char icg[50][100];
 %}
 
 %union{
@@ -98,14 +103,40 @@ datatype: INT               { insert_type(); }
         ;
 
 body: body body                                             { $$.nd = makenode($1.nd, $2.nd, "statements"); }
-    | WHILE { add('K'); } '(' condition ')' '{' body '}'    { $$.nd = makenode($4.nd, $7.nd, "While"); }
-    | IF  { add('K'); } '(' condition ')' '{' body '}' else { struct node *iff = makenode($4.nd, $7.nd, $1.name);  
-                                                              $$.nd = makenode(iff, $9.nd, "if-else"); }
+    | WHILE { add('K'); is_while = 1; } '(' condition ')' '{' body '}'    { $$.nd = makenode($4.nd, $7.nd, "While");
+                                                            sprintf(icg[icgind++], "GOTO %s\n", $4.if_body);
+                                                            sprintf(icg[icgind++], "\n %s:\n", $4.else_body);}
+    | IF  { add('K'); is_while = 0; } '(' condition ')' { sprintf(icg[icgind++], "\n %s:\n", $4.if_body); } '{' body '}' { sprintf(icg[icgind++], "\n %s:\n", $4.else_body); } else   
+                                                            { struct node *iff = makenode($4.nd, $8.nd, $1.name);  
+                                                              $$.nd = makenode(iff, $11.nd, "if-else"); 
+                                                              sprintf(icg[icgind++], "GOTO next\n");}
     | statement ';'                                         { $$.nd = $1.nd; }
     ;
 
-condition: expression relop expression                      { $$.nd = makenode($1.nd, $3.nd, $2.name); }
-        | expression                                        { $$.nd = $1.nd; }
+condition: expression relop expression                      { $$.nd = makenode($1.nd, $3.nd, $2.name); 
+                                                            if(is_while) {  
+                                                                sprintf($$.if_body, "L%d", label++);  
+                                                                sprintf(icg[icgind++], "\n %s:\n", $$.if_body);
+                                                                sprintf(icg[icgind++], "\nif NOT (%s %s %s) GOTO L%d\n", $1.name, $2.name, $3.name, label);  
+                                                                sprintf($$.else_body, "L%d", label++); 
+                                                            } 
+                                                            else {  
+                                                                sprintf(icg[icgind++], "\nif (%s %s %s) GOTO L%d else GOTO L%d\n", $1.name, $2.name, $3.name, label, label+1);
+                                                                sprintf($$.if_body, "L%d", label++);  
+                                                                sprintf($$.else_body, "L%d", label++); 
+                                                            }}
+        | expression                                        { $$.nd = $1.nd;
+                                                            if(is_while) {  
+                                                                sprintf($$.if_body, "L%d", label++);  
+                                                                sprintf(icg[icgind++], "\n %s:\n", $$.if_body);
+                                                                sprintf(icg[icgind++], "\nif NOT (%s) GOTO L%d\n", $1.name,label);  
+                                                                sprintf($$.else_body, "L%d", label++); 
+                                                            } 
+                                                            else {  
+                                                                sprintf(icg[icgind++], "\nif (%s) GOTO L%d else GOTO L%d\n", $1.name, $2.name, $3.name, label, label+1);
+                                                                sprintf($$.if_body, "L%d", label++);  
+                                                                sprintf($$.else_body, "L%d", label++); 
+                                                            }}
         | TRUE                                              { add('K'); $$.nd = NULL; }
         | FALSE                                             { add('K'); $$.nd = NULL; }
         |                                                   { $$.nd = NULL; }
@@ -141,7 +172,8 @@ statement: datatype ID { add('V'); } init                   {$2.nd = makenode(NU
                                                             }
                                                             else {   
                                                                 $$.nd = makenode($2.nd, $4.nd, "declaration");  
-                                                            }}
+                                                            }
+                                                            sprintf(icg[icgind++], "%s = %s\n", $2.name, $4.name);}
         | ID { check_declaration($1.name); }'=' expression  { $1.nd = makenode(NULL, NULL, $1.name);
                                                             char *id_type = get_type($1.name);  
                                                             if(strcmp(id_type, $4.type)) {  
@@ -180,15 +212,30 @@ statement: datatype ID { add('V'); } init                   {$2.nd = makenode(NU
                                                             } 
                                                             else {  
                                                                 $$.nd = makenode($1.nd, $4.nd, "=");  
+                                                            }
+                                                            sprintf(icg[icgind++], "%s = %s\n", $1.name, $4.name);}
+        | ID { check_declaration($1.name); } relop expression { $1.nd = makenode(NULL, NULL, $1.name); 
+                                                            $$.nd = makenode($1.nd, $4.nd, $3.name); }
+        | ID { check_declaration($1.name); } UNARY          { $1.nd = makenode(NULL, NULL, $1.name); 
+                                                            $3.nd = makenode(NULL, NULL, $3.name); 
+                                                            $$.nd = makenode($1.nd, $3.nd, "ITERATOR");
+                                                            if(!strcmp($3.name, "++")) {
+                                                                sprintf(icg[icgind++], "t%d = %s + 1\n%s = t%d\n", temp_var, $1.name, $1.name, temp_var++);
+                                                            }
+                                                            else {
+                                                                sprintf(icg[icgind++], "t%d = %s - 1\n%s = t%d\n", temp_var, $1.name, $1.name, temp_var++);
                                                             }}
-        | ID relop expression                               { $1.nd = makenode(NULL, NULL, $1.name); 
-                                                            $$.nd = makenode($1.nd, $3.nd, $2.name); }
-        | ID UNARY                                          { $1.nd = makenode(NULL, NULL, $1.name); 
+        | UNARY ID                                          { check_declaration($2.name); 
+                                                            $1.nd = makenode(NULL, NULL, $1.name); 
                                                             $2.nd = makenode(NULL, NULL, $2.name); 
-                                                            $$.nd = makenode($1.nd, $2.nd, "ITERATOR");}
-        | UNARY ID                                          { $1.nd = makenode(NULL, NULL, $1.name); 
-                                                            $2.nd = makenode(NULL, NULL, $2.name); 
-                                                            $$.nd = makenode($1.nd, $2.nd, "ITERATOR"); }
+                                                            $$.nd = makenode($1.nd, $2.nd, "ITERATOR"); 
+                                                            if(!strcmp($1.name, "++")) {
+                                                                sprintf(icg[icgind++], "t%d = %s + 1\n%s = t%d\n", temp_var, $2.name, $2.name, temp_var++);
+                                                            }
+                                                            else {
+                                                                sprintf(icg[icgind++], "t%d = %s - 1\n%s = t%d\n", temp_var, $2.name, $2.name, temp_var++);
+
+                                                            }}
         | PRINTF { add('K'); } '(' STR ')'                  { $$.nd = makenode(NULL, NULL, "printf"); }
         | SCANF { add('K'); } '(' STR ',' '&' ID ')'        { $$.nd = makenode(NULL, NULL, "scanf"); }
         ;
@@ -238,7 +285,8 @@ init: ',' ID { add('V'); } init                             {sprintf($$.type, "n
                                                             }
                                                             else {   
                                                                 $$.nd = makenode($2.nd, $4.nd, "declaration");  
-                                                            }}
+                                                            }
+                                                            sprintf(icg[icgind++], "%s = %s\n", $2.name, $4.name);}
     | '=' value ',' ID { add('V'); } init                   {$$.nd = $2.nd; 
                                                             sprintf($$.type, $2.type); 
                                                             strcpy($$.name, $2.name);
@@ -272,7 +320,8 @@ init: ',' ID { add('V'); } init                             {sprintf($$.type, "n
                                                             }
                                                             else {   
                                                                 $$.nd = makenode($4.nd, $6.nd, "declaration");  
-                                                            }}
+                                                            }
+                                                            sprintf(icg[icgind++], "%s = %s\n", $4.name, $6.name);}
     | '=' value                                             { $$.nd = $2.nd; 
                                                             sprintf($$.type, $2.type); 
                                                             strcpy($$.name, $2.name); }
@@ -317,7 +366,10 @@ expression: expression arithmetic expression                { if(!strcmp($1.type
                                                                     sprintf($$.type, $3.type);   
                                                                     $$.nd = makenode(temp, $3.nd, $2.name);  
                                                                 } 
-                                                            }}
+                                                            }
+                                                            sprintf($$.name, "t%d", temp_var);
+                                                            temp_var++;
+                                                            sprintf(icg[icgind++], "%s = %s %s %s\n",  $$.name, $1.name, $2.name, $3.name);}
           | value                                           { strcpy($$.name, $1.name); 
                                                             sprintf($$.type, $1.type); 
                                                             $$.nd = $1.nd;}
@@ -351,8 +403,8 @@ int main() {
     yyin=fopen("input.c","r");
     printf("\n");
     yyparse();
-    printf("__________________________________________________________________________________________________________________________\n");
-    printf("Syntax Analysis:\nParsing Successful\n\nSymbol Table:\n");
+    printf("_____________________________________________________________________________________________________________________\n");
+    printf("\nSyntax Analysis:\nParsing Successful\n\nSymbol Table:\n");
 
     printf("\nSYMBOL\t\tTYPE\t\tDATATYPE\tSIZE\t\tOFFSET\t\tSCOPE\n");
 	printf("______________________________________________________________________________________\n\n");
@@ -366,8 +418,8 @@ int main() {
 	}
     printf("\n\nSyntax Tree:\n\n");
     printLevelOrder(head);
-    printf("\n__________________________________________________________________________________________________________________________\n");
-	printf("Semantic Analysis:\n");
+    printf("\n___________________________________________________________________________________________________________________\n");
+	printf("\nSemantic Analysis:\n");
     	if(sem_errors>0) {
 		    printf("Semantic analysis completed with %d errors:\n", sem_errors);
 		for(int i=0; i<sem_errors; i++){
@@ -376,7 +428,11 @@ int main() {
 	} else {
 		printf("Semantic analysis completed with no errors");
 	}
-    printf("\n\n");
+    printf("\n\nIntermediate Code Generation:\n\n");
+	for(int i=0; i<icgind; i++){
+		printf("%s", icg[i]);
+	}
+	printf("\n\n");
     return 0;
 }
 void yyerror(const char* msg) {

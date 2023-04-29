@@ -3,12 +3,9 @@
 
 int main() {
     int b;
-    if(a<b){
-        a++;
-    }
-    else{
+    int c=3;
+    while(b<c){
         b++;
     }
-    c++;
     return 1;
 }
