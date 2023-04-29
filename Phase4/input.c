@@ -2,10 +2,19 @@
 #include<string.h>
 
 int main() {
-    int a = 20;
-    int x=1;
-    while(a<z){
-        a++;
+    int b;
+    int a, c;
+    while(1){
+        if(a<b){
+            a++;
+            while(1){
+                c++;
+            }
+        }
+        else{
+            b++;
+        }
     }
+   
     return 1;
 }
