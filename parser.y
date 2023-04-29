@@ -46,7 +46,7 @@
     extern int countn;
     int label=0;
     char errors[10][100];
-    char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "for", "main", "return", "include"};
+    char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "while", "main", "return", "include"};
     int sem_errors=0;
 
     int icgind=0;
@@ -400,6 +400,7 @@ return: RETURN { add('K'); } NUM ';'                        {$1.nd = makenode(NU
 %%
 int main() {
     yyin=fopen("input.c","r");
+    FILE *out = fopen("output.txt", "w");
     printf("\n");
     printf("_____________________________________________________________________________________________________________________\n");
     printf("\nPhase 1-Lexical Analyser:\n\n");
@@ -435,6 +436,7 @@ int main() {
     printf("Three address code succesfully generated:\n\n");
 	for(int i=0; i<icgind; i++){
 		printf("%s", icg[i]);
+        fprintf(out, "%s", icg[i]);
 	}
     printf("\n___________________________________________________________________________________________________________________\n");
 	printf("\n\n");
