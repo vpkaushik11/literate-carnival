@@ -54,11 +54,6 @@
     int is_while=0;
     char buffer[100];
     char icg[50][100];
-    int icgind=0;
-    int temp_var=0; 
-    int is_while=0;
-    char buffer[100];
-    char icg[50][100];
 %}
 
 %union{
