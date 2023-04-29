@@ -3,12 +3,17 @@
 
 int main() {
     int b;
-    if(a<b){
-        a++;
+    while(1){
+        if(a<b){
+            a++;
+            while(1){
+                c++;
+            }
+        }
+        else{
+            b++;
+        }
     }
-    else{
-        b++;
-    }
-    c++;
+   
     return 1;
 }

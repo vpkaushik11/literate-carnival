@@ -105,35 +105,34 @@ datatype: INT               { insert_type(); }
 body: body body                                             { $$.nd = makenode($1.nd, $2.nd, "statements"); }
     | WHILE { add('K'); is_while = 1; } '(' condition ')' '{' body '}'    { $$.nd = makenode($4.nd, $7.nd, "While");
                                                             sprintf(icg[icgind++], "GOTO %s\n", $4.if_body);
-                                                            sprintf(icg[icgind++], "\n %s:\n", $4.else_body);}
-    | IF  { add('K'); is_while = 0; } '(' condition ')' { sprintf(icg[icgind++], "\n %s:\n", $4.if_body); } '{' body '}' { sprintf(icg[icgind++], "\n %s:\n", $4.else_body); } else   
+                                                            sprintf(icg[icgind++], "\n%s:\n", $4.else_body);}
+    | IF  { add('K'); is_while = 0; } '(' condition ')' { sprintf(icg[icgind++], "\n%s:\n", $4.if_body); } '{' body '}' { sprintf(icg[icgind++], "GOTO Next\n\n%s:\n", $4.else_body); } else   
                                                             { struct node *iff = makenode($4.nd, $8.nd, $1.name);  
-                                                              $$.nd = makenode(iff, $11.nd, "if-else"); 
-                                                              sprintf(icg[icgind++], "GOTO next\n");}
+                                                              $$.nd = makenode(iff, $11.nd, "if-else");} 
     | statement ';'                                         { $$.nd = $1.nd; }
     ;
 
 condition: expression relop expression                      { $$.nd = makenode($1.nd, $3.nd, $2.name); 
                                                             if(is_while) {  
                                                                 sprintf($$.if_body, "L%d", label++);  
-                                                                sprintf(icg[icgind++], "\n %s:\n", $$.if_body);
-                                                                sprintf(icg[icgind++], "\nif NOT (%s %s %s) GOTO L%d\n", $1.name, $2.name, $3.name, label);  
+                                                                sprintf(icg[icgind++], "\n%s:\n", $$.if_body);
+                                                                sprintf(icg[icgind++], "if NOT (%s %s %s) GOTO L%d\n", $1.name, $2.name, $3.name, label);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             } 
                                                             else {  
-                                                                sprintf(icg[icgind++], "\nif (%s %s %s) GOTO L%d else GOTO L%d\n", $1.name, $2.name, $3.name, label, label+1);
+                                                                sprintf(icg[icgind++], "if (%s %s %s) GOTO L%d\nGOTO L%d\n", $1.name, $2.name, $3.name, label, label+1);
                                                                 sprintf($$.if_body, "L%d", label++);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             }}
         | expression                                        { $$.nd = $1.nd;
                                                             if(is_while) {  
                                                                 sprintf($$.if_body, "L%d", label++);  
-                                                                sprintf(icg[icgind++], "\n %s:\n", $$.if_body);
-                                                                sprintf(icg[icgind++], "\nif NOT (%s) GOTO L%d\n", $1.name,label);  
+                                                                sprintf(icg[icgind++], "\n%s:\n", $$.if_body);
+                                                                sprintf(icg[icgind++], "if NOT (%s) GOTO L%d\n", $1.name,label);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             } 
                                                             else {  
-                                                                sprintf(icg[icgind++], "\nif (%s) GOTO L%d else GOTO L%d\n", $1.name, label, label+1);
+                                                                sprintf(icg[icgind++], "if (%s) GOTO L%d\nGOTO L%d\n", $1.name, label, label+1);
                                                                 sprintf($$.if_body, "L%d", label++);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             }}
@@ -402,9 +401,12 @@ return: RETURN { add('K'); } NUM ';'                        {$1.nd = makenode(NU
 int main() {
     yyin=fopen("input.c","r");
     printf("\n");
-    yyparse();
     printf("_____________________________________________________________________________________________________________________\n");
-    printf("\nSyntax Analysis:\nParsing Successful\n\nSymbol Table:\n");
+    printf("\nPhase 1-Lexical Analyser:\n\n");
+    yyparse();
+    printf("Tokenization Succesful\n\n");
+    printf("_____________________________________________________________________________________________________________________\n");
+    printf("\nPhase 2-Syntax Analyser:\n\nParsing Successful.\nSymbol Table:\n");
 
     printf("\nSYMBOL\t\tTYPE\t\tDATATYPE\tSIZE\t\tOFFSET\t\tSCOPE\n");
 	printf("______________________________________________________________________________________\n\n");
@@ -416,10 +418,10 @@ int main() {
 		free(symbol_table[i].id_name);
 		free(symbol_table[i].type);
 	}
-    printf("\n\nSyntax Tree:\n\n");
+    printf("\n\nSyntax Tree in Level Order:\n\n");
     printLevelOrder(head);
     printf("\n___________________________________________________________________________________________________________________\n");
-	printf("\nSemantic Analysis:\n");
+	printf("\nPhase 3-Semantic Analyser:\n\n");
     	if(sem_errors>0) {
 		    printf("Semantic analysis completed with %d errors:\n", sem_errors);
 		for(int i=0; i<sem_errors; i++){
@@ -428,10 +430,13 @@ int main() {
 	} else {
 		printf("Semantic analysis completed with no errors");
 	}
-    printf("\n\nIntermediate Code Generation:\n\n");
+    printf("\n___________________________________________________________________________________________________________________\n");
+    printf("\nPhase 4-Intermediate Code Generator:\n\n");
+    printf("Three address code succesfully generated:\n\n");
 	for(int i=0; i<icgind; i++){
 		printf("%s", icg[i]);
 	}
+    printf("\n___________________________________________________________________________________________________________________\n");
 	printf("\n\n");
     return 0;
 }
