@@ -99,7 +99,7 @@ int main() {
         string x;
         while (getline(inp, x))
         {
-            if(x != "\n"){
+            if(x != ""){
                 bla.push_back(x);
             }
         }
