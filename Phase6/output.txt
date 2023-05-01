@@ -2,27 +2,27 @@ b = NULL
 c = NULL
 a = NULL
 
-L0:
-if NOT (1) GOTO L1
-if (a < b) GOTO L2
-GOTO L3
+L0 :
+if !(1) goto L1
+if(a<b) goto L2
+goto L3
 
-L2:
+L2 :
 t0 = a + 1
 a = t0
 
-L4:
-if NOT (1) GOTO L5
+L4 :
+if !(1) goto L5
 t1 = c + 1
 c = t1
-GOTO L4
+goto L4
 
-L5:
-GOTO Next
+L5 :
+goto Lz
 
-L3:
+L3 :
 t2 = b + 1
 b = t2
-GOTO L0
+goto L0
 
-L1:
+L1 :

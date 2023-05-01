@@ -6,7 +6,6 @@
 #include <sstream>
 
 using namespace std;
-
 // Structure to store a quadruple
 struct Quadruple {
     string opcode;
@@ -34,28 +33,28 @@ vector<Quadruple> icg_to_quadruples(vector<vector<string> > icg) {
         // Check the operator and generate the appropriate quadruple
         if (code[3] == "+") {
             // Addition operation
-            string temp_var = "t" + to_string(temp_var_count["t"]);
-            temp_var_count["t"]++;
+            // string temp_var = "t" + to_string(temp_var_count["t"]);
+            // temp_var_count["t"]++;
             quadruples.push_back(Quadruple("+", code[2], code[4], code[0]));
             // quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
         } else if (code[3] == "-") {
             // Subtraction operation
-            string temp_var = "t" + to_string(temp_var_count["t"]);
-            temp_var_count["t"]++;
+            // string temp_var = "t" + to_string(temp_var_count["t"]);
+            // temp_var_count["t"]++;
 
             quadruples.push_back(Quadruple("-", code[2], code[4], code[0]));
             // quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
         } else if (code[3] == "*") {
             // Multiplication operation
-            string temp_var = "t" + to_string(temp_var_count["t"]);
-            temp_var_count["t"]++;
+            // string temp_var = "t" + to_string(temp_var_count["t"]);
+            // temp_var_count["t"]++;
 
             quadruples.push_back(Quadruple("*", code[2], code[4], code[0]));
             // quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
         } else if (code[3] == "/") {
             // Division operation
-            string temp_var = "t" + to_string(temp_var_count["t"]);
-            temp_var_count["t"]++;
+            // string temp_var = "t" + to_string(temp_var_count["t"]);
+            // temp_var_count["t"]++;
 
             quadruples.push_back(Quadruple("/", code[2], code[4], code[0]));
             // quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
@@ -67,9 +66,24 @@ vector<Quadruple> icg_to_quadruples(vector<vector<string> > icg) {
             quadruples.push_back(Quadruple("GOTO", "$", "$", code[1]));
         } else if (code[0] == "if") {
             // If statement
-            if(code[1] == "NOT"){
-                if(code[2] == "(1)"){
-                    quadruples.push_back(Quadruple("NOT", code[2], "$", code[5]));
+            string NOT = "!";
+            if(code[1][0] == NOT[0] && code.size() == 4){
+                if(code[1].size() == 4){ // checking if it of the form !(x) where x is any number
+                    string x = "";
+                    x += code[1][2];
+                    quadruples.push_back(Quadruple("NOT", x, "$", code[3]));
+                }else if(code[1][0] == NOT[0] && code.size() > 4){
+                    string temp_var = "ß" + to_string(temp_var_count["ß"]);
+                    temp_var_count["ß"]++;
+
+                    string a = code[1];
+                    string b = code[3];
+                    a.erase(0,2);
+                    cout <<"Debug: " << a << endl;
+                    b.pop_back();
+
+                    quadruples.push_back(Quadruple(code[2], a, b, temp_var));
+                    quadruples.push_back(Quadruple(NOT, temp_var, "$", code[5]));
                 }
             }else{
                 char x = code[1][1];

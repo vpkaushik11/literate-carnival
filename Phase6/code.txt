@@ -1,18 +1,15 @@
 = NULL $ b
 = NULL $ c
 = NULL $ a
-label $ $ L0
-NOT (1) $ 
-< a b L2
-label $ $ L2
+NOT 1 $ L1
+GOTO $ $ L3
 + a 1 t0
 = t0 $ a
-label $ $ L4
-NOT (1) $ 
+NOT 1 $ L5
 + c 1 t1
 = t1 $ c
-label $ $ L5
-label $ $ L3
+GOTO $ $ L4
+GOTO $ $ Lz
 + b 1 t2
 = t2 $ b
-label $ $ L1
+GOTO $ $ L0
