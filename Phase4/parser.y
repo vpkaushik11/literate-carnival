@@ -128,7 +128,7 @@ condition: expression relop expression                      { $$.nd = makenode($
                                                             if(is_while) {  
                                                                 sprintf($$.if_body, "L%d", label++);  
                                                                 sprintf(icg[icgind++], "\n%s :\n", $$.if_body);
-                                                                sprintf(icg[icgind++], "if!(%s) goto L%d\n", $1.name,label);  
+                                                                sprintf(icg[icgind++], "if !(%s) goto L%d\n", $1.name,label);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             } 
                                                             else {  

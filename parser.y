@@ -46,7 +46,7 @@
     extern int countn;
     int label=0;
     char errors[10][100];
-    char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "while", "main", "return", "include"};
+    char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "for", "main", "return", "include"};
     int sem_errors=0;
 
     int icgind=0;
@@ -104,9 +104,9 @@ datatype: INT               { insert_type(); }
 
 body: body body                                             { $$.nd = makenode($1.nd, $2.nd, "statements"); }
     | WHILE { add('K'); is_while = 1; } '(' condition ')' '{' body '}'    { $$.nd = makenode($4.nd, $7.nd, "While");
-                                                            sprintf(icg[icgind++], "GOTO %s\n", $4.if_body);
-                                                            sprintf(icg[icgind++], "\n%s:\n", $4.else_body);}
-    | IF  { add('K'); is_while = 0; } '(' condition ')' { sprintf(icg[icgind++], "\n%s:\n", $4.if_body); } '{' body '}' { sprintf(icg[icgind++], "GOTO Next\n\n%s:\n", $4.else_body); } else   
+                                                            sprintf(icg[icgind++], "goto %s\n", $4.if_body);
+                                                            sprintf(icg[icgind++], "\n%s :\n", $4.else_body);}
+    | IF  { add('K'); is_while = 0; } '(' condition ')' { sprintf(icg[icgind++], "\n%s :\n", $4.if_body); } '{' body '}' { sprintf(icg[icgind++], "goto Lz\n\n%s :\n", $4.else_body); } else   
                                                             { struct node *iff = makenode($4.nd, $8.nd, $1.name);  
                                                               $$.nd = makenode(iff, $11.nd, "if-else");} 
     | statement ';'                                         { $$.nd = $1.nd; }
@@ -115,24 +115,24 @@ body: body body                                             { $$.nd = makenode($
 condition: expression relop expression                      { $$.nd = makenode($1.nd, $3.nd, $2.name); 
                                                             if(is_while) {  
                                                                 sprintf($$.if_body, "L%d", label++);  
-                                                                sprintf(icg[icgind++], "\n%s:\n", $$.if_body);
-                                                                sprintf(icg[icgind++], "if NOT (%s %s %s) GOTO L%d\n", $1.name, $2.name, $3.name, label);  
+                                                                sprintf(icg[icgind++], "\n%s :\n", $$.if_body);
+                                                                sprintf(icg[icgind++], "if!(%s%s%s) goto L%d\n", $1.name, $2.name, $3.name, label);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             } 
                                                             else {  
-                                                                sprintf(icg[icgind++], "if (%s %s %s) GOTO L%d\nGOTO L%d\n", $1.name, $2.name, $3.name, label, label+1);
+                                                                sprintf(icg[icgind++], "if(%s%s%s) goto L%d\ngoto L%d\n", $1.name, $2.name, $3.name, label, label+1);
                                                                 sprintf($$.if_body, "L%d", label++);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             }}
         | expression                                        { $$.nd = $1.nd;
                                                             if(is_while) {  
                                                                 sprintf($$.if_body, "L%d", label++);  
-                                                                sprintf(icg[icgind++], "\n%s:\n", $$.if_body);
-                                                                sprintf(icg[icgind++], "if NOT (%s) GOTO L%d\n", $1.name,label);  
+                                                                sprintf(icg[icgind++], "\n%s :\n", $$.if_body);
+                                                                sprintf(icg[icgind++], "if!(%s) goto L%d\n", $1.name,label);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             } 
                                                             else {  
-                                                                sprintf(icg[icgind++], "if (%s) GOTO L%d\nGOTO L%d\n", $1.name, label, label+1);
+                                                                sprintf(icg[icgind++], "if(%s) goto L%d\ngoto L%d\n", $1.name, label, label+1);
                                                                 sprintf($$.if_body, "L%d", label++);  
                                                                 sprintf($$.else_body, "L%d", label++); 
                                                             }}

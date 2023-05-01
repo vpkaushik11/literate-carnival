@@ -116,7 +116,7 @@
     extern int countn;
     int label=0;
     char errors[10][100];
-    char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "while", "main", "return", "include"};
+    char reserved[10][10] = {"int", "float", "char", "void", "if", "else", "for", "main", "return", "include"};
     int sem_errors=0;
 
     int icgind=0;

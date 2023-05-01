@@ -3,17 +3,17 @@ c = NULL
 a = NULL
 
 L0 :
-if!(1) goto L1
+if !(1) goto L1
 if(a<b) goto L2
 goto L3
 
 L2 :
-t1 = a + 1
+t0 = a + 1
 a = t0
 
 L4 :
-if!(1) goto L5
-t2 = c + 1
+if !(1) goto L5
+t1 = c + 1
 c = t1
 goto L4
 
@@ -21,8 +21,8 @@ L5 :
 goto Lz
 
 L3 :
-t3 = b + 1
+t2 = b + 1
 b = t2
 goto L0
 
-L1:
+L1 :
