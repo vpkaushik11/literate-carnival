@@ -73,15 +73,15 @@ vector<Quadruple> icg_to_quadruples(vector<vector<string> > icg) {
                     x += code[1][2];
                     quadruples.push_back(Quadruple("NOT", x, "$", code[3]));
                 }else if(code[1][0] == NOT[0] && code.size() > 4){
-                    string temp_var = "ß" + to_string(temp_var_count["ß"]);
-                    temp_var_count["ß"]++;
+                    string temp_var = "s" + to_string(temp_var_count["s"]);
+                    temp_var_count["s"]++;
 
                     string a = code[1];
                     string b = code[3];
                     a.erase(0,2);
                     cout <<"Debug: " << a << endl;
                     b.pop_back();
-
+                    
                     quadruples.push_back(Quadruple(code[2], a, b, temp_var));
                     quadruples.push_back(Quadruple(NOT, temp_var, "$", code[5]));
                 }
