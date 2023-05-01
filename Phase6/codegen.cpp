@@ -4,6 +4,7 @@
 // #include <bits/stdc++.h>
 #include <fstream>
 #include <map>
+#include <sstream>
 
 
 using namespace std;
@@ -538,17 +539,53 @@ void generate_code()
 
 int main()
 {
-    quad_table.push_back({"=", "5", " ", "x"});
-    quad_table.push_back({"=", "3", " ", "y"});
-    quad_table.push_back({"+", "x", "y", "z"});
-    quad_table.push_back({"<=", "t1", "10", "L1"});
-    quad_table.push_back({"*", "t1", "2", "t2"});
-    quad_table.push_back({"=", "t2", " ", "z"});
-    quad_table.push_back({"goto", " ", " ", "L2"});
-    quad_table.push_back({"label", " ", " ", "L1"});
-    quad_table.push_back({"/", "t1", "2", "t3"});
-    quad_table.push_back({"=", "t3", " ", "z"});
-    quad_table.push_back({"label", " ", " ", "L2"});
+    fstream inp, out;
+    inp.open("code.txt", ios::in);
+    vector<string> bla;
+    if(inp.is_open()){
+        string x;
+        while (getline(inp, x))
+        {
+            if(x != ""){
+                bla.push_back(x);
+            }
+        }
+    }
+    for(int i = 0; i < bla.size(); i++){
+        vector<string> vec;
+        istringstream iss(bla[i]);
+        string word;
+
+        while (iss >> word) {
+            vec.push_back(word);
+        }
+        Quadruple x;
+        x.op = vec[0];
+        if(vec[1] == "$"){
+            x.arg1 = " ";
+        } else{
+            x.arg1 = vec[1];
+        }
+        if(vec[2] == "$"){
+            x.arg2 = " ";
+        } else{
+            x.arg2 = vec[2];
+        }
+        x.result = vec[3];
+        // cout << x.op << " " << x.arg1 << " " << x.arg2 << " " << x.result << endl;
+        quad_table.push_back(x);
+    }
+    // quad_table.push_back({"=", "5", " ", "x"});
+    // quad_table.push_back({"=", "3", " ", "y"});
+    // quad_table.push_back({"+", "x", "y", "z"});
+    // quad_table.push_back({"<=", "t1", "10", "L1"});
+    // quad_table.push_back({"*", "t1", "2", "t2"});
+    // quad_table.push_back({"=", "t2", " ", "z"});
+    // quad_table.push_back({"goto", " ", " ", "L2"});
+    // quad_table.push_back({"label", " ", " ", "L1"});
+    // quad_table.push_back({"/", "t1", "2", "t3"});
+    // quad_table.push_back({"=", "t3", " ", "z"});
+    // quad_table.push_back({"label", " ", " ", "L2"});
     generate_code();
     return 0;
 }

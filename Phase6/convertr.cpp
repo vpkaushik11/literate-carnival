@@ -61,15 +61,15 @@ vector<Quadruple> icg_to_quadruples(vector<vector<string> > icg) {
             // quadruples.push_back(Quadruple("=", temp_var, "", code[3]));
         } else if (code[1] == "=") {
             // Assignment operation
-            quadruples.push_back(Quadruple("=", code[2], "", code[0]));
+            quadruples.push_back(Quadruple("=", code[2], "$", code[0]));
         } else if (code[0] == "goto") {
             // Goto statement
-            quadruples.push_back(Quadruple("GOTO", "", "", code[1]));
+            quadruples.push_back(Quadruple("GOTO", "$", "$", code[1]));
         } else if (code[0] == "if") {
             // If statement
             if(code[1] == "NOT"){
                 if(code[2] == "(1)"){
-                    quadruples.push_back(Quadruple("NOT", code[2], "", code[5]));
+                    quadruples.push_back(Quadruple("NOT", code[2], "$", code[5]));
                 }
             }else{
                 char x = code[1][1];
@@ -82,7 +82,7 @@ vector<Quadruple> icg_to_quadruples(vector<vector<string> > icg) {
             }
         } else if (code.size() == 1) {
             // Label statement
-            quadruples.push_back(Quadruple("label", "", "", code[0].substr(0, code[0].size() - 1)));
+            quadruples.push_back(Quadruple("label", "$", "$", code[0].substr(0, code[0].size() - 1)));
         }
     }
 
@@ -91,8 +91,9 @@ vector<Quadruple> icg_to_quadruples(vector<vector<string> > icg) {
 
 int main() {
     // Sample ICG
-    fstream inp;
+    fstream inp, out;
     inp.open("output.txt", ios::in);
+    out.open("code.txt", ios::out);
     vector<vector<string> > ICG;
     vector<string> bla;
     if(inp.is_open()){
@@ -116,7 +117,12 @@ int main() {
         ICG.push_back(vec);
     }
     vector<Quadruple> q = icg_to_quadruples(ICG);
+    string final;
     for(auto it : q){
         cout << it.opcode << " " << it.arg1 << " " << it.arg2 << " "<< it.result << endl;
+        final.append(it.opcode + " " + it.arg1 + " " + it.arg2 + " " + it.result + "\n");
     }
+    final.pop_back();
+    out << final;
+    return 0;
 }
