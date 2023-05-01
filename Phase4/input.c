@@ -1,20 +1,14 @@
 #include<stdio.h>
-#include<string.h>
-
-int main() {
-    int b;
-    int a, c;
-    while(1){
+int main(){
+    int a,b,d;
+    int for =5;
+    while(a+b<b/d){
         if(a<b){
-            a++;
-            while(1){
-                c++;
-            }
+            c++;
         }
         else{
-            b++;
+            d--;
         }
     }
-   
-    return 1;
+    return 0;
 }

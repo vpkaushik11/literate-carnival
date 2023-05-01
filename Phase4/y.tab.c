@@ -1491,11 +1491,11 @@ yyreduce:
                                                             if(is_while) {  
                                                                 sprintf((yyval.node_obj3).if_body, "L%d", label++);  
                                                                 sprintf(icg[icgind++], "\n%s :\n", (yyval.node_obj3).if_body);
-                                                                sprintf(icg[icgind++], "if!(%s%s%s) goto L%d\n", (yyvsp[-2].node_obj2).name, (yyvsp[-1].node_obj).name, (yyvsp[0].node_obj2).name, label);  
+                                                                sprintf(icg[icgind++], "if !(%s %s %s) goto L%d\n", (yyvsp[-2].node_obj2).name, (yyvsp[-1].node_obj).name, (yyvsp[0].node_obj2).name, label);  
                                                                 sprintf((yyval.node_obj3).else_body, "L%d", label++); 
                                                             } 
                                                             else {  
-                                                                sprintf(icg[icgind++], "if(%s%s%s) goto L%d\ngoto L%d\n", (yyvsp[-2].node_obj2).name, (yyvsp[-1].node_obj).name, (yyvsp[0].node_obj2).name, label, label+1);
+                                                                sprintf(icg[icgind++], "if (%s %s %s) goto L%d\ngoto L%d\n", (yyvsp[-2].node_obj2).name, (yyvsp[-1].node_obj).name, (yyvsp[0].node_obj2).name, label, label+1);
                                                                 sprintf((yyval.node_obj3).if_body, "L%d", label++);  
                                                                 sprintf((yyval.node_obj3).else_body, "L%d", label++); 
                                                             }}
@@ -1512,7 +1512,7 @@ yyreduce:
                                                                 sprintf((yyval.node_obj3).else_body, "L%d", label++); 
                                                             } 
                                                             else {  
-                                                                sprintf(icg[icgind++], "if(%s) goto L%d\ngoto L%d\n", (yyvsp[0].node_obj2).name, label, label+1);
+                                                                sprintf(icg[icgind++], "if (%s) goto L%d\ngoto L%d\n", (yyvsp[0].node_obj2).name, label, label+1);
                                                                 sprintf((yyval.node_obj3).if_body, "L%d", label++);  
                                                                 sprintf((yyval.node_obj3).else_body, "L%d", label++); 
                                                             }}

@@ -1,28 +1,23 @@
+d = NULL
 b = NULL
-c = NULL
 a = NULL
+for = 5
+t0 = a + b
+t1 = b / d
 
 L0 :
-if !(1) goto L1
-if(a<b) goto L2
+if !(t0 < t1) goto L1
+if (a < b) goto L2
 goto L3
 
 L2 :
-t0 = a + 1
-a = t0
-
-L4 :
-if !(1) goto L5
-t1 = c + 1
-c = t1
-goto L4
-
-L5 :
+t2 = c + 1
+c = t2
 goto Lz
 
 L3 :
-t2 = b + 1
-b = t2
+t3 = d - 1
+d = t3
 goto L0
 
 L1 :
